@@ -42,7 +42,6 @@ func migrate(db *gorm.DB) {
 }
 func initDB() *gorm.DB {
 	dsn := os.Getenv("DATABASE_CONNECT")
-	log.Println(dsn)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Ошибка при подключении к базе данных: ", err)
@@ -53,7 +52,7 @@ func initDB() *gorm.DB {
 func routers() {
 	http.HandleFunc("/", serveHTML)
 	http.HandleFunc("/PC", collectDataPC)
-	http.HandleFunc("/IOS", collectDataIOS)
+	http.HandleFunc("/Mobile", collectDataMobile)
 	http.HandleFunc("/createDirectURL", createDirectURL)
 }
 
@@ -89,14 +88,15 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 
 	userAgent := r.Header.Get("User-Agent")
 
-	if strings.Contains(userAgent, "iPhone") {
-		htmlFile, err := os.ReadFile("static/iosScreen.html")
+	if strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "Android") || strings.Contains(userAgent, "iPad") {
+		htmlFile, err := os.ReadFile("static/mobileScreen.html")
 		if err != nil {
 			http.Error(w, "Error reading HTML file", http.StatusInternalServerError)
 			return
 		}
 
 		modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directUrl.URL, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", code, -1)
 
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(modifiedHTML))
@@ -126,17 +126,23 @@ func collectDataPC(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Данные полученыфы")
 }
 
-func collectDataIOS(w http.ResponseWriter, r *http.Request) {
+func collectDataMobile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		log.Println("Неверный метод:", r.Method)
 		http.Error(w, "Только POST-запросы поддерживаются", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var data clientData.IOS
+	var data clientData.Mobile
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		log.Println("Ошибка декодирования данных:", err)
 		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
+		return
+	}
+	var requesterInfo models.Requester = data.ToRequester()
+	requesterInfo.IP = r.RemoteAddr
+	if err := db.Create(&requesterInfo).Error; err != nil {
+		http.Error(w, "Failed to create requester info", http.StatusInternalServerError)
 		return
 	}
 

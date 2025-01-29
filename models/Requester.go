@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -9,8 +10,9 @@ type Requester struct {
 	IP                     string
 	UserAgent              string
 	Platform               string
+	Version                string
 	Language               string
-	Languages              []string `gorm:"type:json"`
+	Languages              pq.StringArray `gorm:"type:text[]" `
 	CookiesEnabled         bool
 	ConnectionType         string
 	IsOnline               bool
