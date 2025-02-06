@@ -10,6 +10,8 @@ import (
 	"redirectServer/models"
 	"strings"
 
+	"io"
+
 	"github.com/joho/godotenv"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gorm.io/driver/postgres"
@@ -31,6 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
 func migrate(db *gorm.DB) {
 	db.Migrator().DropTable(&models.DirectURL{}, &models.Requester{})
 	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}) != nil {
@@ -40,6 +43,7 @@ func migrate(db *gorm.DB) {
 	db.Create(&directURL)
 
 }
+
 func initDB() *gorm.DB {
 	dsn := os.Getenv("DATABASE_CONNECT")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -49,11 +53,95 @@ func initDB() *gorm.DB {
 
 	return db
 }
+
 func routers() {
 	http.HandleFunc("/", serveHTML)
 	http.HandleFunc("/PC", collectDataPC)
 	http.HandleFunc("/Mobile", collectDataMobile)
 	http.HandleFunc("/createDirectURL", createDirectURL)
+	http.HandleFunc("/findRequester", findRequester)
+
+}
+
+func findRequester(w http.ResponseWriter, r *http.Request) {
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var requester models.ParticalRequester
+	err = json.Unmarshal(body, &requester)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	var query *gorm.DB
+	var response models.DirectURL
+	if requester.UniversalLink != nil {
+		res := db.Where(&models.DirectURL{URL: *requester.UniversalLink}).Order("createdAt desc").First(&response)
+		if res.Error != nil {
+			http.Error(w, res.Error.Error(), http.StatusNotFound)
+			return
+		}
+		query.Where("direct_url_id = ?", response.ID)
+	}
+
+	if requester.Memory != nil {
+		query.Where("memory = ?", *requester.Memory)
+	}
+
+	if requester.Cores != nil {
+		query.Where("cores = ?", *requester.Cores)
+	}
+	ip := strings.Split(r.RemoteAddr, ":")[0]
+	query.Where(`ip = ? 
+		AND platform = ? 
+		AND version = ? 
+		AND language = ? 
+		AND languages = ?
+		AND screenWidth = ?
+		AND screenHeight = ?
+		AND colorDepth = ?
+		AND pixelRatio = ?
+		AND viewportWidth = ?
+		AND viewportHeight = ?
+		AND timeZone = ?`,
+		ip,
+		requester.Platform,
+		requester.Version,
+		requester.Language,
+		requester.Languages,
+		requester.ScreenWidth,
+		requester.ScreenHeight,
+		requester.ColorDepth,
+		requester.PixelRatio,
+		requester.ViewportWidth,
+		requester.ViewportHeight,
+		requester.TimeZone)
+	var installedRequester models.Requester
+	res := query.Order("createdAt desc").First(&installedRequester)
+	if res.Error != nil {
+		http.Error(w, res.Error.Error(), http.StatusNotFound)
+		return
+	}
+
+	installedRequester.IsInstalled = true
+	db.Save(&installedRequester)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if response == (models.DirectURL{}) {
+		res := db.Where(&models.DirectURL{URL: *requester.UniversalLink}).Order("createdAt desc").First(&response)
+		if res.Error != nil {
+			http.Error(w, res.Error.Error(), http.StatusNotFound)
+			return
+		}
+	}
+
+	json.NewEncoder(w).Encode(response.URL)
 }
 
 func createDirectURL(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +228,14 @@ func collectDataMobile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var requesterInfo models.Requester = data.ToRequester()
-	requesterInfo.IP = r.RemoteAddr
+	ipParts := strings.Split(r.RemoteAddr, ":")
+	if len(ipParts) == 2 {
+		requesterInfo.IP = ipParts[0]
+		requesterInfo.Port = ipParts[1]
+	} else {
+		fmt.Println("Некорректный формат строки")
+	}
+
 	if err := db.Create(&requesterInfo).Error; err != nil {
 		http.Error(w, "Failed to create requester info", http.StatusInternalServerError)
 		return
