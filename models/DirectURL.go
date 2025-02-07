@@ -12,5 +12,17 @@ type DirectURL struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	URL       string
-	Сlicks    int `gorm:"default:0"`
+	Сlicks    int        `gorm:"default:0"`
+	Payload   PayloadURL `gorm:"embedded"`
+}
+
+type PayloadURL struct {
+	Title       string
+	Name        string
+	Description string
+}
+
+type ParticalDirectURL struct {
+	URL     string
+	Payload PayloadURL
 }

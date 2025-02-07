@@ -1,3 +1,4 @@
+
 const appStoreLinkIOS = "https://apps.apple.com/app/maestri/id6469101735";
 const appStoreLinkAndroid = "https://play.google.com/apps/internaltest/4701369389039828090";
 var appStoreLink;
@@ -12,9 +13,13 @@ async function getData() {
     if(userAgent.match(/iPhone|iPad/)) {
         version = getIOSVersion();
         appStoreLink = appStoreLinkIOS;
+        const s = document.getElementById('buttonImage')
+        s.src = 'static/assets/appStoreButton.png'
     } else {
         version =  getAndroidVersion();
         appStoreLink = appStoreLinkAndroid
+        const s = document.getElementById('buttonImage')
+        s.src = 'static/assets/googlePlayButton.png'
     }
     const canvas = document.getElementById("canvas");
     const gl = canvas.getContext("webgl");

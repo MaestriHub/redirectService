@@ -39,7 +39,11 @@ func migrate(db *gorm.DB) {
 	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
-	directURL := models.DirectURL{ID: "YSg6UgcF", URL: "tg://resolve?domain=vitalik_shevtsov&text=ass&profile"}
+	directURL := models.DirectURL{
+		ID:      "YSg6UgcF",
+		URL:     "tg://resolve?domain=vitalik_shevtsov&text=ass&profile",
+		Payload: models.PayloadURL{Title: "Индивидуальный мастер", Name: "Анна Алексеева", Description: " Привет! Меня зовут Аня, я профессиональный мастер маникюра с опытом работы 17 лет. Жду тебя на процедуру! "},
+	}
 	db.Create(&directURL)
 
 }
@@ -61,6 +65,35 @@ func routers() {
 	http.HandleFunc("/createDirectURL", createDirectURL)
 	http.HandleFunc("/findRequester", findRequester)
 
+}
+
+func createDirectURL(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var particalDirectURL models.ParticalDirectURL
+	err = json.Unmarshal(body, &particalDirectURL)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	id, err := gonanoid.New(8)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	directURL := models.DirectURL{ID: id, URL: particalDirectURL.URL, Payload: particalDirectURL.Payload}
+
+	if err := db.Create(&directURL).Error; err != nil {
+		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "URL created successfully: %s", directURL.URL)
 }
 
 func findRequester(w http.ResponseWriter, r *http.Request) {
@@ -144,25 +177,6 @@ func findRequester(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response.URL)
 }
 
-func createDirectURL(w http.ResponseWriter, r *http.Request) {
-	queryParam := r.URL.Query().Get("universalLink")
-	if queryParam == "" {
-		http.Error(w, "Missing query parameter 'universalLink'", http.StatusBadRequest)
-		return
-	}
-	id, err := gonanoid.New(8)
-	if err != nil {
-		log.Fatal(err)
-	}
-	directURL := models.DirectURL{ID: id, URL: queryParam}
-
-	if err := db.Create(&directURL).Error; err != nil {
-		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprintf(w, "URL created successfully: %s", directURL.URL)
-}
-
 func serveHTML(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
@@ -184,6 +198,9 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 		}
 
 		modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directUrl.URL, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Name}}", directUrl.Payload.Name, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Title}}", directUrl.Payload.Title, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Description}}", directUrl.Payload.Description, -1)
 		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", code, -1)
 
 		w.Header().Set("Content-Type", "text/html")
