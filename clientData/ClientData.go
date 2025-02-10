@@ -49,13 +49,13 @@ type Mobile struct {
 
 func (mobile Mobile) ToRequester() models.Requester {
 	return models.Requester{
-		UserAgent:      mobile.UserAgent,
+		UserAgent:      &mobile.UserAgent,
 		Platform:       mobile.Platform,
 		Version:        mobile.Version,
 		Language:       mobile.Language,
 		Languages:      pq.StringArray(mobile.Languages),
-		Cores:          mobile.Cores,
-		Memory:         mobile.Memory,
+		Cores:          &mobile.Cores,
+		Memory:         &mobile.Memory,
 		ScreenWidth:    mobile.ScreenWidth,
 		ScreenHeight:   mobile.ScreenHeight,
 		ColorDepth:     mobile.ColorDepth,
@@ -63,8 +63,7 @@ func (mobile Mobile) ToRequester() models.Requester {
 		ViewportWidth:  mobile.ViewportWidth,
 		ViewportHeight: mobile.ViewportHeight,
 		Renderer:       mobile.Renderer,
-		VendorRender:   mobile.VendorRender,
+		VendorRender:   &mobile.VendorRender,
 		TimeZone:       mobile.TimeZone,
-		DirectURLID:    mobile.DirectURLID,
 	}
 }

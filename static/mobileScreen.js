@@ -10,16 +10,15 @@ var appStoreLink;
 async function getData() {
     var userAgent = navigator.userAgent
     var version;
+    const imageButton = document.getElementById('buttonImage')
     if(userAgent.match(/iPhone|iPad/)) {
         version = getIOSVersion();
         appStoreLink = appStoreLinkIOS;
-        const s = document.getElementById('buttonImage')
-        s.src = 'static/assets/appStoreButton.png'
+        imageButton.src = 'static/assets/appStoreButton.png'
     } else {
         version =  getAndroidVersion();
         appStoreLink = appStoreLinkAndroid
-        const s = document.getElementById('buttonImage')
-        s.src = 'static/assets/googlePlayButton.png'
+        imageButton.src = 'static/assets/googlePlayButton.png'
     }
     const canvas = document.getElementById("canvas");
     const gl = canvas.getContext("webgl");

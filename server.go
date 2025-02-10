@@ -13,6 +13,7 @@ import (
 	"io"
 
 	"github.com/joho/godotenv"
+	"github.com/lib/pq"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,15 +36,23 @@ func main() {
 }
 
 func migrate(db *gorm.DB) {
-	db.Migrator().DropTable(&models.DirectURL{}, &models.Requester{})
-	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}) != nil {
+	db.Migrator().DropTable(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{})
+	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
-	directURL := models.DirectURL{
-		ID:      "YSg6UgcF",
-		URL:     "tg://resolve?domain=vitalik_shevtsov&text=ass&profile",
-		Payload: models.PayloadURL{Title: "Индивидуальный мастер", Name: "Анна Алексеева", Description: " Привет! Меня зовут Аня, я профессиональный мастер маникюра с опытом работы 17 лет. Жду тебя на процедуру! "},
+	var directURL = models.DirectURL{
+		ID:       "YSg6UgcF",
+		Payload:  "c6acaff7-29a5-4c60-b8b8-4be02503bd8b",
+		URLEvent: "SalonInvite",
 	}
+
+	db.Create(&directURL)
+	directURL = models.DirectURL{
+		ID:       "YSg6Ugcf",
+		Payload:  "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
+		URLEvent: "EmployeerInvite",
+	}
+
 	db.Create(&directURL)
 
 }
@@ -63,7 +72,7 @@ func routers() {
 	http.HandleFunc("/PC", collectDataPC)
 	http.HandleFunc("/Mobile", collectDataMobile)
 	http.HandleFunc("/createDirectURL", createDirectURL)
-	http.HandleFunc("/findRequester", findRequester)
+	//http.HandleFunc("/findRequester", findRequester)
 
 }
 
@@ -86,14 +95,14 @@ func createDirectURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	directURL := models.DirectURL{ID: id, URL: particalDirectURL.URL, Payload: particalDirectURL.Payload}
+	//TODO: сделать валидатор на URLEvent
+	directURL := models.DirectURL{ID: id, Payload: particalDirectURL.Payload, URLEvent: particalDirectURL.URLEvent}
 
 	if err := db.Create(&directURL).Error; err != nil {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "URL created successfully: %s", directURL.URL)
+	fmt.Fprintf(w, "URL created successfully")
 }
 
 func findRequester(w http.ResponseWriter, r *http.Request) {
@@ -105,76 +114,134 @@ func findRequester(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	var requester models.ParticalRequester
-	err = json.Unmarshal(body, &requester)
+	var inputRequester models.ParticalRequester
+	err = json.Unmarshal(body, &inputRequester)
 	if err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 	var query *gorm.DB
-	var response models.DirectURL
-	if requester.UniversalLink != nil {
-		res := db.Where(&models.DirectURL{URL: *requester.UniversalLink}).Order("createdAt desc").First(&response)
-		if res.Error != nil {
-			http.Error(w, res.Error.Error(), http.StatusNotFound)
-			return
+
+	if inputRequester.Memory != nil {
+		query = query.Where("memory = ?", *inputRequester.Memory)
+	} else {
+		query = query.Where("memory IS NULL")
+	}
+
+	if inputRequester.Cores != nil {
+		query = query.Where("cores = ?", *inputRequester.Cores)
+	} else {
+		query = query.Where("cores IS NULL")
+	}
+
+	if inputRequester.VendorRender != nil {
+		query = query.Where("vendor_render = ?", *inputRequester.VendorRender)
+	} else {
+		query = query.Where("vendor_render IS NULL")
+	}
+	conditions := map[string]interface{}{
+		"ip":              strings.Split(r.RemoteAddr, ":")[0],
+		"platform":        inputRequester.Platform,
+		"version":         inputRequester.Version,
+		"language":        inputRequester.Language,
+		"languages":       pq.StringArray(inputRequester.Languages),
+		"screen_width":    inputRequester.ScreenWidth,
+		"screen_height":   inputRequester.ScreenHeight,
+		"color_depth":     inputRequester.ColorDepth,
+		"pixel_ratio":     inputRequester.PixelRatio,
+		"viewport_width":  inputRequester.ViewportWidth,
+		"viewport_height": inputRequester.ViewportHeight,
+		"renderer":        inputRequester.Renderer,
+		"time_zone":       inputRequester.TimeZone,
+	}
+	var foundRequester *models.Requester
+	var foundURL *models.DirectURL
+	res := query.Where(conditions).Order("createdAt desc").First(&foundRequester)
+	if res.Error != nil {
+		var foundHistory models.HistoryRequester
+		res := db.Where("requester_id = ?", foundRequester.ID).Order("createdAt desc").First(&foundHistory)
+		if res.Error == nil {
+			res = db.Where("id = ?", foundHistory.DirectURLID).First(&foundURL)
 		}
-		query.Where("direct_url_id = ?", response.ID)
-	}
-
-	if requester.Memory != nil {
-		query.Where("memory = ?", *requester.Memory)
-	}
-
-	if requester.Cores != nil {
-		query.Where("cores = ?", *requester.Cores)
 	}
 	ip := strings.Split(r.RemoteAddr, ":")[0]
-	query.Where(`ip = ? 
-		AND platform = ? 
-		AND version = ? 
-		AND language = ? 
-		AND languages = ?
-		AND screenWidth = ?
-		AND screenHeight = ?
-		AND colorDepth = ?
-		AND pixelRatio = ?
-		AND viewportWidth = ?
-		AND viewportHeight = ?
-		AND timeZone = ?`,
-		ip,
-		requester.Platform,
-		requester.Version,
-		requester.Language,
-		requester.Languages,
-		requester.ScreenWidth,
-		requester.ScreenHeight,
-		requester.ColorDepth,
-		requester.PixelRatio,
-		requester.ViewportWidth,
-		requester.ViewportHeight,
-		requester.TimeZone)
-	var installedRequester models.Requester
-	res := query.Order("createdAt desc").First(&installedRequester)
-	if res.Error != nil {
-		http.Error(w, res.Error.Error(), http.StatusNotFound)
+	if isOrganic(foundRequester, inputRequester, inputRequester.UniversalLink, ip, db) {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	installedRequester.IsInstalled = true
-	db.Save(&installedRequester)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if response == (models.DirectURL{}) {
-		res := db.Where(&models.DirectURL{URL: *requester.UniversalLink}).Order("createdAt desc").First(&response)
-		if res.Error != nil {
-			http.Error(w, res.Error.Error(), http.StatusNotFound)
-			return
-		}
+	if isFound(foundRequester, foundURL, inputRequester.UniversalLink, db) {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	if isNotFound(foundRequester, foundURL, inputRequester, inputRequester.UniversalLink, ip, db) {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if isFoundUncorrect(foundRequester, foundURL, inputRequester.UniversalLink, db) {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+}
 
-	json.NewEncoder(w).Encode(response.URL)
+func isOrganic(
+	foundRequester *models.Requester,
+	inputRequester models.ParticalRequester,
+	inputURL *string,
+	inputIP string,
+	db *gorm.DB,
+) bool {
+	if foundRequester == nil && inputURL == nil {
+		fullRequester := inputRequester.ToRequester(inputIP, nil, []string{string(models.Organic)})
+		db.Create(&fullRequester)
+		return true
+	}
+	return false
+}
+
+func isFound(
+	foundRequester *models.Requester,
+	foundURL *models.DirectURL,
+	inputURL *string,
+	db *gorm.DB,
+) bool {
+	if foundRequester != nil && foundURL != nil && foundURL.ParseToURL() == *inputURL {
+		foundRequester.Statuses = append(foundRequester.Statuses, string(models.Found))
+		db.Save(&foundRequester)
+		return true
+	}
+	return false
+}
+
+func isNotFound(
+	foundRequester *models.Requester,
+	foundURL *models.DirectURL,
+	inputRequester models.ParticalRequester,
+	inputURL *string,
+	inputIP string,
+	db *gorm.DB,
+) bool {
+	if foundRequester == nil && foundURL == nil && inputURL != nil {
+		fullRequester := inputRequester.ToRequester(inputIP, nil, []string{string(models.NotFound)})
+		db.Create(&fullRequester)
+		return true
+	}
+	return false
+}
+
+func isFoundUncorrect(
+	foundRequester *models.Requester,
+	foundURL *models.DirectURL,
+	inputURL *string,
+	db *gorm.DB,
+) bool {
+	if foundRequester != nil && foundURL != nil && foundURL.ParseToURL() != *inputURL {
+		foundRequester.Statuses = append(foundRequester.Statuses, string(models.FoundUncorrect))
+		db.Save(&foundRequester)
+		return true
+	}
+	return false
 }
 
 func serveHTML(w http.ResponseWriter, r *http.Request) {
@@ -196,11 +263,14 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error reading HTML file", http.StatusInternalServerError)
 			return
 		}
-
-		modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directUrl.URL, -1)
-		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Name}}", directUrl.Payload.Name, -1)
-		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Title}}", directUrl.Payload.Title, -1)
-		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Description}}", directUrl.Payload.Description, -1)
+		assembledPayload, err := directUrl.GetPayload(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directUrl.ParseToURL(), -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Name}}", assembledPayload.Name, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Title}}", assembledPayload.Event, -1)
+		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.Description}}", assembledPayload.Description, -1)
 		modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", code, -1)
 
 		w.Header().Set("Content-Type", "text/html")
@@ -248,14 +318,59 @@ func collectDataMobile(w http.ResponseWriter, r *http.Request) {
 	ipParts := strings.Split(r.RemoteAddr, ":")
 	if len(ipParts) == 2 {
 		requesterInfo.IP = ipParts[0]
-		requesterInfo.Port = ipParts[1]
+		//equesterInfo.Port = ipParts[1]
 	} else {
 		fmt.Println("Некорректный формат строки")
 	}
 
-	if err := db.Create(&requesterInfo).Error; err != nil {
-		http.Error(w, "Failed to create requester info", http.StatusInternalServerError)
-		return
+	conditions := map[string]interface{}{
+		"ip":         requesterInfo.IP,
+		"user_agent": requesterInfo.UserAgent,
+		"platform":   requesterInfo.Platform,
+		"version":    requesterInfo.Version,
+		"language":   requesterInfo.Language,
+		"languages":  pq.StringArray(requesterInfo.Languages),
+		"cores":      requesterInfo.Cores,
+		//"memory":          requesterInfo.Memory,
+		"screen_width":    requesterInfo.ScreenWidth,
+		"screen_height":   requesterInfo.ScreenHeight,
+		"color_depth":     requesterInfo.ColorDepth,
+		"pixel_ratio":     requesterInfo.PixelRatio,
+		"viewport_width":  requesterInfo.ViewportWidth,
+		"viewport_height": requesterInfo.ViewportHeight,
+		"renderer":        requesterInfo.Renderer,
+		"vendor_render":   requesterInfo.VendorRender,
+		"time_zone":       requesterInfo.TimeZone,
+	}
+	query := db.Where(conditions)
+	if requesterInfo.Memory != nil {
+		query = query.Where("memory = ?", *requesterInfo.Memory)
+	} else {
+		query = query.Where("memory IS NULL")
+	}
+	var existingRequester models.Requester
+
+	if query.First(&existingRequester).Error != nil {
+		requesterInfo.Statuses = pq.StringArray([]string{string(models.Linked)})
+		if err := db.Create(&requesterInfo).Error; err != nil {
+			http.Error(w, "Failed to create requester info", http.StatusInternalServerError)
+			return
+		}
+		db.Create(
+			&models.HistoryRequester{
+				RequesterID: requesterInfo.ID,
+				Port:        ipParts[1],
+				DirectURLID: data.DirectURLID,
+			},
+		)
+	} else {
+		db.Create(
+			&models.HistoryRequester{
+				RequesterID: existingRequester.ID,
+				Port:        ipParts[1],
+				DirectURLID: data.DirectURLID,
+			},
+		)
 	}
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
