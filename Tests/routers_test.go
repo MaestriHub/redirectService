@@ -1,29 +1,58 @@
 package test
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"redirectServer/models"
 	"redirectServer/routers"
 	"testing"
 )
 
-func TestUpperCaseHandler(t *testing.T) {
+func TestOrganicInput(t *testing.T) {
 	if DB == nil {
 		t.Fatal("DB is not initialized")
 	}
-	req := httptest.NewRequest(http.MethodPost, "/findRequester", nil)
+	cores := 2
+	input := models.ParticalFingerprint{
+		Platform:       "iPhone",
+		Version:        "12.32",
+		Language:       "ru",
+		Languages:      []string{"ru"},
+		Cores:          &cores,
+		Memory:         nil,
+		ScreenWidth:    12,
+		ScreenHeight:   15,
+		ColorDepth:     1,
+		PixelRatio:     23,
+		ViewportWidth:  21,
+		ViewportHeight: 12,
+		Renderer:       "ASF",
+		VendorRender:   nil,
+		TimeZone:       "Africa",
+		UniversalLink:  nil,
+	}
+	body, err := json.Marshal(input)
+	if err != nil {
+		t.Fatalf("Failed to marshal data: %v", err)
+	}
+	NewFingerprintBuilder().SetVersion("124124").Build(DB)
+	req := httptest.NewRequest(http.MethodPost, "/findFingerprint", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	requester, err := NewRequesterBuilder().SetVersion("124124").Build(DB)
-	requester.ColorDepth = 12
-	routers.FindRequester(w, req)
+	routers.FindFingerprint(w, req)
+
 	res := w.Result()
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
+	t.Logf("Response body: %s", data)
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
-	if string(data) != "ABC" {
-		t.Errorf("expected ABC got %v", string(data))
+
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200 OK, got %v", res.StatusCode)
 	}
 }

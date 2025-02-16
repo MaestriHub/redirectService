@@ -24,7 +24,7 @@ type PC struct {
 	ViewportHeight int      `json:"viewportHeight"`
 	TimeZone       string   `json:"timeZone"`
 	CurrentTime    string   `json:"currentTime"`
-	DirectURLID    string   `json:"directURLID"`
+	DirectLinkID   string   `json:"directLinkID"`
 }
 
 type Mobile struct {
@@ -44,11 +44,11 @@ type Mobile struct {
 	Renderer       string   `json:"renderer"`
 	VendorRender   string   `json:"vendor"`
 	TimeZone       string   `json:"timeZone"`
-	DirectURLID    string   `json:"directURLID"`
+	DirectLinkID   string   `json:"directLinkID"`
 }
 
-func (mobile Mobile) ToRequester() models.Requester {
-	return models.Requester{
+func (mobile Mobile) ToFingerprint() models.Fingerprint {
+	return models.Fingerprint{
 		UserAgent:      &mobile.UserAgent,
 		Platform:       mobile.Platform,
 		Version:        mobile.Version,

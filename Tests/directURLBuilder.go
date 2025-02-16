@@ -6,43 +6,43 @@ import (
 	"gorm.io/gorm"
 )
 
-type DirectURLBuilder struct {
-	directURL *models.DirectURL
+type DirectLinkBuilder struct {
+	directLink *models.DirectLink
 }
 
-func NewDirectURLBuilder() *DirectURLBuilder {
-	return &DirectURLBuilder{
-		directURL: &models.DirectURL{
-			ID:       "YSg6Ugcf",
-			Payload:  "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
-			URLEvent: "EmployeerInvite",
+func NewDirectLinkBuilder() *DirectLinkBuilder {
+	return &DirectLinkBuilder{
+		directLink: &models.DirectLink{
+			ID:      "YSg6Ugcf",
+			Payload: "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
+			Event:   "EmployeerInvite",
 		},
 	}
 }
 
-func (du *DirectURLBuilder) SetID(id string) *DirectURLBuilder {
-	du.directURL.ID = id
+func (du *DirectLinkBuilder) SetID(id string) *DirectLinkBuilder {
+	du.directLink.ID = id
 	return du
 }
 
-func (du *DirectURLBuilder) SetPayload(payload string) *DirectURLBuilder {
-	du.directURL.Payload = payload
+func (du *DirectLinkBuilder) SetPayload(payload string) *DirectLinkBuilder {
+	du.directLink.Payload = payload
 	return du
 }
 
-func (du *DirectURLBuilder) SetURLEvent(urlEvent string) *DirectURLBuilder {
-	du.directURL.URLEvent = urlEvent
+func (du *DirectLinkBuilder) SetEvent(event string) *DirectLinkBuilder {
+	du.directLink.Event = event
 	return du
 }
 
-func (du *DirectURLBuilder) SetСlicks(clicks int) *DirectURLBuilder {
-	du.directURL.Сlicks = clicks
+func (du *DirectLinkBuilder) SetСlicks(clicks int) *DirectLinkBuilder {
+	du.directLink.Сlicks = clicks
 	return du
 }
 
-func (du *DirectURLBuilder) Build(db *gorm.DB) (*models.DirectURL, error) {
-	if err := db.Create(du.directURL).Error; err != nil {
+func (du *DirectLinkBuilder) Build(db *gorm.DB) (*models.DirectLink, error) {
+	if err := db.Create(du.directLink).Error; err != nil {
 		return nil, err
 	}
-	return du.directURL, nil
+	return du.directLink, nil
 }

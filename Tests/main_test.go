@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"redirectServer/models"
-	"redirectServer/source"
+	"redirectServer/routers"
 	"testing"
 
 	"gorm.io/driver/postgres"
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 
 	DB = initTestDB()
 	migrateTest(DB)
-	source.DB = DB
+	routers.InitRouters(DB)
 	m.Run()
 
 }
@@ -36,8 +36,8 @@ func initTestDB() *gorm.DB {
 }
 
 func migrateTest(db *gorm.DB) {
-	db.Migrator().DropTable(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{})
-	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{}) != nil {
+	db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
+	if db.AutoMigrate(&models.DirectLink{}, &models.Fingerprint{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
 

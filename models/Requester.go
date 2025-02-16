@@ -5,17 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type RequesterStatus string
-
-const (
-	Linked         RequesterStatus = "linked"
-	Found          RequesterStatus = "found"
-	FoundUncorrect RequesterStatus = "found_uncorrect"
-	NotFound       RequesterStatus = "not_found"
-	Organic        RequesterStatus = "organic"
-)
-
-type Requester struct {
+type Fingerprint struct {
 	gorm.Model
 	//TODO: по-хорошему надо сделать связь в user так как может меняться ip,но пользуется один и тот же человек
 	//UserID         uuid
@@ -36,17 +26,10 @@ type Requester struct {
 	Renderer       string
 	VendorRender   *string
 	TimeZone       string
-	Statuses       pq.StringArray `gorm:"type:text[]"`
+	DirectLinkID   string
 }
 
-type HistoryRequester struct {
-	gorm.Model
-	Port        string
-	RequesterID uint
-	DirectURLID string
-}
-
-type ParticalRequester struct {
+type ParticalFingerprint struct {
 	Platform       string         `json:"platform"`
 	Version        string         `json:"version"`
 	Language       string         `json:"language"`
@@ -65,8 +48,8 @@ type ParticalRequester struct {
 	UniversalLink  *string `json:"universalLink"`
 }
 
-func (p *ParticalRequester) ToRequester(ip string, userAgent *string, statuses []string) *Requester {
-	return &Requester{
+func (p *ParticalFingerprint) ToFingerprint(ip string, userAgent *string) *Fingerprint {
+	return &Fingerprint{
 		IP:             ip,
 		UserAgent:      userAgent,
 		Platform:       p.Platform,
@@ -84,6 +67,5 @@ func (p *ParticalRequester) ToRequester(ip string, userAgent *string, statuses [
 		Renderer:       p.Renderer,
 		VendorRender:   p.VendorRender,
 		TimeZone:       p.TimeZone,
-		Statuses:       pq.StringArray(statuses),
 	}
 }

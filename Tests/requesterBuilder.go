@@ -7,16 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type RequesterBuilder struct {
-	requester *models.Requester
+type FingerprintBuilder struct {
+	Fingerprint *models.Fingerprint
 }
 
-func NewRequesterBuilder() *RequesterBuilder {
+func NewFingerprintBuilder() *FingerprintBuilder {
 	userAgent := "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1"
 	cores := 4
 	memory := 0
-	return &RequesterBuilder{
-		requester: &models.Requester{
+	return &FingerprintBuilder{
+		Fingerprint: &models.Fingerprint{
 			IP:             "192.168.0.111",
 			UserAgent:      &userAgent,
 			Platform:       "iPhone",
@@ -33,101 +33,101 @@ func NewRequesterBuilder() *RequesterBuilder {
 			TimeZone:       "Europe/Moscow",
 			Cores:          &cores,
 			Memory:         &memory,
-			Statuses:       []string{string(models.Linked)},
+			DirectLinkID:   "1",
 		},
 	}
 }
 
-func (rb *RequesterBuilder) SetUserAgent(userAgent *string) *RequesterBuilder {
-	rb.requester.UserAgent = userAgent
+func (rb *FingerprintBuilder) SetUserAgent(userAgent *string) *FingerprintBuilder {
+	rb.Fingerprint.UserAgent = userAgent
 	return rb
 }
 
-func (rb *RequesterBuilder) SetPlatform(platform string) *RequesterBuilder {
-	rb.requester.Platform = platform
+func (rb *FingerprintBuilder) SetPlatform(platform string) *FingerprintBuilder {
+	rb.Fingerprint.Platform = platform
 	return rb
 }
 
-func (rb *RequesterBuilder) SetVersion(version string) *RequesterBuilder {
-	rb.requester.Version = version
+func (rb *FingerprintBuilder) SetVersion(version string) *FingerprintBuilder {
+	rb.Fingerprint.Version = version
 	return rb
 }
 
-func (rb *RequesterBuilder) SetLanguage(language string) *RequesterBuilder {
-	rb.requester.Language = language
+func (rb *FingerprintBuilder) SetLanguage(language string) *FingerprintBuilder {
+	rb.Fingerprint.Language = language
 	return rb
 }
 
-func (rb *RequesterBuilder) SetLanguages(languages pq.StringArray) *RequesterBuilder {
-	rb.requester.Languages = languages
+func (rb *FingerprintBuilder) SetLanguages(languages pq.StringArray) *FingerprintBuilder {
+	rb.Fingerprint.Languages = languages
 	return rb
 }
 
-func (rb *RequesterBuilder) SetCores(cores int) *RequesterBuilder {
-	rb.requester.Cores = &cores
+func (rb *FingerprintBuilder) SetCores(cores int) *FingerprintBuilder {
+	rb.Fingerprint.Cores = &cores
 	return rb
 }
 
-func (rb *RequesterBuilder) SetMemory(memory int) *RequesterBuilder {
-	rb.requester.Memory = &memory
+func (rb *FingerprintBuilder) SetMemory(memory int) *FingerprintBuilder {
+	rb.Fingerprint.Memory = &memory
 	return rb
 }
 
-func (rb *RequesterBuilder) SetScreenWidth(width int) *RequesterBuilder {
-	rb.requester.ScreenWidth = width
+func (rb *FingerprintBuilder) SetScreenWidth(width int) *FingerprintBuilder {
+	rb.Fingerprint.ScreenWidth = width
 	return rb
 }
 
-func (rb *RequesterBuilder) SetScreenHeight(height int) *RequesterBuilder {
-	rb.requester.ScreenHeight = height
+func (rb *FingerprintBuilder) SetScreenHeight(height int) *FingerprintBuilder {
+	rb.Fingerprint.ScreenHeight = height
 	return rb
 }
 
-func (rb *RequesterBuilder) SetColorDepth(depth int) *RequesterBuilder {
-	rb.requester.ColorDepth = depth
+func (rb *FingerprintBuilder) SetColorDepth(depth int) *FingerprintBuilder {
+	rb.Fingerprint.ColorDepth = depth
 	return rb
 }
 
-func (rb *RequesterBuilder) SetPixelRatio(ratio float64) *RequesterBuilder {
-	rb.requester.PixelRatio = ratio
+func (rb *FingerprintBuilder) SetPixelRatio(ratio float64) *FingerprintBuilder {
+	rb.Fingerprint.PixelRatio = ratio
 	return rb
 }
 
-func (rb *RequesterBuilder) SetViewportWidth(width int) *RequesterBuilder {
-	rb.requester.ViewportWidth = width
+func (rb *FingerprintBuilder) SetViewportWidth(width int) *FingerprintBuilder {
+	rb.Fingerprint.ViewportWidth = width
 	return rb
 }
 
-func (rb *RequesterBuilder) SetViewportHeight(height int) *RequesterBuilder {
-	rb.requester.ViewportHeight = height
+func (rb *FingerprintBuilder) SetViewportHeight(height int) *FingerprintBuilder {
+	rb.Fingerprint.ViewportHeight = height
 	return rb
 }
 
-func (rb *RequesterBuilder) SetRenderer(renderer string) *RequesterBuilder {
-	rb.requester.Renderer = renderer
+func (rb *FingerprintBuilder) SetRenderer(renderer string) *FingerprintBuilder {
+	rb.Fingerprint.Renderer = renderer
 	return rb
 }
 
-func (rb *RequesterBuilder) SetVendorRender(vendorRender *string) *RequesterBuilder {
-	rb.requester.VendorRender = vendorRender
+func (rb *FingerprintBuilder) SetVendorRender(vendorRender *string) *FingerprintBuilder {
+	rb.Fingerprint.VendorRender = vendorRender
 	return rb
 }
 
-func (rb *RequesterBuilder) SetTimeZone(timeZone string) *RequesterBuilder {
-	rb.requester.TimeZone = timeZone
+func (rb *FingerprintBuilder) SetTimeZone(timeZone string) *FingerprintBuilder {
+	rb.Fingerprint.TimeZone = timeZone
 	return rb
 }
 
-func (rb *RequesterBuilder) SetStatuses(statuses pq.StringArray) *RequesterBuilder {
-	rb.requester.Statuses = statuses
+func (rb *FingerprintBuilder) SetStatuses(directLink string) *FingerprintBuilder {
+	rb.Fingerprint.DirectLinkID = directLink
 	return rb
 }
 
-// Завершающий метод для создания и сохранения Requester в базе данных
-func (rb *RequesterBuilder) Build(db *gorm.DB) (*models.Requester, error) {
-	// Сохраняем Requester в базу данных перед возвратом
-	if err := db.Create(rb.requester).Error; err != nil {
+// Завершающий метод для создания и сохранения Fingerprint в базе данных
+func (rb *FingerprintBuilder) Build(db *gorm.DB) (*models.Fingerprint, error) {
+	// Сохраняем Fingerprint в базу данных перед возвратом
+	if err := db.Create(rb.Fingerprint).Error; err != nil {
 		return nil, err
 	}
-	return rb.requester, nil
+	return rb.Fingerprint, nil
 }

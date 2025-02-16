@@ -3,7 +3,6 @@ package source
 import (
 	"log"
 	"net/http"
-	"os"
 	"redirectServer/models"
 	"redirectServer/routers"
 
@@ -29,29 +28,29 @@ func StartApp() {
 }
 
 func migrate(db *gorm.DB) {
-	db.Migrator().DropTable(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{})
-	if db.AutoMigrate(&models.DirectURL{}, &models.Requester{}, &models.HistoryRequester{}) != nil {
+	db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
+	if db.AutoMigrate(&models.DirectLink{}, &models.Fingerprint{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
-	var directURL = models.DirectURL{
-		ID:       "YSg6UgcF",
-		Payload:  "c6acaff7-29a5-4c60-b8b8-4be02503bd8b",
-		URLEvent: "SalonInvite",
+	var directLink = models.DirectLink{
+		ID:      "YSg6UgcF",
+		Payload: "c6acaff7-29a5-4c60-b8b8-4be02503bd8b",
+		Event:   "SalonInvite",
 	}
 
-	db.Create(&directURL)
-	directURL = models.DirectURL{
-		ID:       "YSg6Ugcf",
-		Payload:  "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
-		URLEvent: "EmployeerInvite",
+	db.Create(&directLink)
+	directLink = models.DirectLink{
+		ID:      "YSg6Ugcf",
+		Payload: "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
+		Event:   "EmployeerInvite",
 	}
 
-	db.Create(&directURL)
+	db.Create(&directLink)
 
 }
 
 func initDB() *gorm.DB {
-	dsn := os.Getenv("DATABASE_CONNECT")
+	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=GMT"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Ошибка при подключении к базе данных: ", err)

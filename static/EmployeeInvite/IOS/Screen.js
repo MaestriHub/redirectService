@@ -1,7 +1,5 @@
 
 const appStoreLinkIOS = "https://apps.apple.com/app/maestri/id6469101735";
-const appStoreLinkAndroid = "https://play.google.com/apps/internaltest/4701369389039828090";
-var appStoreLink;
 
 (async function () {
     await getData();
@@ -9,17 +7,9 @@ var appStoreLink;
 
 async function getData() {
     var userAgent = navigator.userAgent
-    var version;
-    const imageButton = document.getElementById('buttonImage')
-    if(userAgent.match(/iPhone|iPad/)) {
-        version = getIOSVersion();
-        appStoreLink = appStoreLinkIOS;
-        imageButton.src = 'static/assets/appStoreButton.png'
-    } else {
-        version =  getAndroidVersion();
-        appStoreLink = appStoreLinkAndroid
-        imageButton.src = 'static/assets/googlePlayButton.png'
-    }
+    const version = getIOSVersion();
+    appStoreLink = appStoreLinkIOS;
+    
     const canvas = document.getElementById("canvas");
     const gl = canvas.getContext("webgl");
 
@@ -43,7 +33,7 @@ async function getData() {
         renderer: renderer,
         vendorRender: vendor,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-		DirectURLID: linkId,
+		DirectLinkID: linkId,
     };
 
     await fetch('/Mobile', {
@@ -54,7 +44,7 @@ async function getData() {
 
     document.getElementById('copyButton').addEventListener('click', () => {
         navigator.clipboard.writeText(universalLink).then(() => {
-            window.location.href = appStoreLink;
+            window.location.href = appStoreLinkIOS;
         }).catch(() => {
             alert("Не asdasdудалось скопировать ссылку.");
         });
@@ -67,20 +57,6 @@ function getIOSVersion() {
 
     if (match) {
         return match[2].replace(/_/g, '.'); 
-    }
-    return "unknown"; 
-}
-
-function getAndroidVersion() {
-    var userAgent = navigator.userAgent;
-    var match = userAgent.match(/Android (\d+\.\d+)/);
-
-    if (match) {
-        return match[1]; 
-    }
-    match = userAgent.match(/Android (\d+)/);
-    if (match) {
-        return match[1]; 
     }
     return "unknown"; 
 }
