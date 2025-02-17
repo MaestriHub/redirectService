@@ -47,6 +47,24 @@ type Mobile struct {
 	DirectLinkID   string   `json:"directLinkID"`
 }
 
+func (pc PC) ToFingerprint() models.Fingerprint {
+	return models.Fingerprint{
+		UserAgent:      &pc.UserAgent,
+		Platform:       pc.Platform,
+		Language:       pc.Language,
+		Languages:      pq.StringArray(pc.Languages),
+		Cores:          &pc.Cores,
+		Memory:         &pc.Memory,
+		ScreenWidth:    pc.ScreenWidth,
+		ScreenHeight:   pc.ScreenHeight,
+		ColorDepth:     pc.ColorDepth,
+		PixelRatio:     pc.PixelRatio,
+		ViewportWidth:  pc.ViewportWidth,
+		ViewportHeight: pc.ViewportHeight,
+		TimeZone:       pc.TimeZone,
+		DirectLinkID:   pc.DirectLinkID,
+	}
+}
 func (mobile Mobile) ToFingerprint() models.Fingerprint {
 	return models.Fingerprint{
 		UserAgent:      &mobile.UserAgent,
@@ -65,5 +83,6 @@ func (mobile Mobile) ToFingerprint() models.Fingerprint {
 		Renderer:       mobile.Renderer,
 		VendorRender:   &mobile.VendorRender,
 		TimeZone:       mobile.TimeZone,
+		DirectLinkID:   mobile.DirectLinkID,
 	}
 }

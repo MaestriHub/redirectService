@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: добавить условие на дату
 func FindFingerprint(data models.Fingerprint, db *gorm.DB) *models.Fingerprint {
 	conditions := map[string]interface{}{
 		"ip":        data.IP,

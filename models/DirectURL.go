@@ -34,11 +34,10 @@ type DirectLink struct { //link.maetry.com/{NanoId
 
 type ParticalDirectLink struct {
 	Payload string
-	Event   string
 }
 
 func (directLink DirectLink) ParseToURL() string {
-	return "https://link.maetry.com/" + directLink.ID
+	return "https://link.maetry.com/?code=" + directLink.ID
 }
 
 func ParseURL(input string, db *gorm.DB) (*DirectLink, error) {

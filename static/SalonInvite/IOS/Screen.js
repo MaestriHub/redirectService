@@ -36,7 +36,7 @@ async function getData() {
 		DirectLinkID: linkId,
     };
 
-    await fetch('/Mobile', {
+    await fetch('/collect/mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),

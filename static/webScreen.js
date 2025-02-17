@@ -1,9 +1,18 @@
 
 (async function () {
     await getPCData();
-    
+    generateQRCode()
 })();
-
+function generateQRCode() {
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: universalLink,
+        width: 128,
+        height: 128,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+}
 async function getPCData() {
     const clientData = {
         userAgent: navigator.userAgent,
@@ -25,7 +34,7 @@ async function getPCData() {
         currentTime: new Date().toISOString(),
     };
 
-    await fetch('/PC', {
+    await fetch('/collect/pc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),

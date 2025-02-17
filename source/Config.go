@@ -44,6 +44,12 @@ func migrate(db *gorm.DB) {
 		Payload: "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
 		Event:   "EmployeerInvite",
 	}
+	db.Create(&directLink)
+	directLink = models.DirectLink{
+		ID:      "YSg6Ugc",
+		Payload: "61b13c30-1134-4d86-a36f-09e430473a6b",
+		Event:   "CustomerInvite",
+	}
 
 	db.Create(&directLink)
 

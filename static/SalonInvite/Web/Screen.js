@@ -25,7 +25,7 @@ async function getPCData() {
         currentTime: new Date().toISOString(),
     };
 
-    await fetch('/PC', {
+    await fetch('/collect/pc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),

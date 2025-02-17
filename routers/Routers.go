@@ -20,21 +20,20 @@ var DB *gorm.DB
 
 func InitRouters(db *gorm.DB) {
 	DB = db
-	//TODO:камел кейс на кебаб кейс
-	//поменять названия PC и Mobile на iternal
-	//direct/create/salon
-	//direct/create/employee
 
 	http.HandleFunc("/", ServeHTML)
-	http.HandleFunc("/PC", CollectDataPC)
-	http.HandleFunc("/Mobile", CollectDataMobile)
-	http.HandleFunc("/createDirectLink", CreateDirectLink)
-	http.HandleFunc("/findFingerprint", FindFingerprint)
+	http.HandleFunc("/collect/pc", CollectDataPC)
+	http.HandleFunc("/collect/mobile", CollectDataMobile)
+	http.HandleFunc("/create/salon", CreateSalonInvite)
+	http.HandleFunc("/create/employeer", CreateEmployeerInvite)
+	http.HandleFunc("/create/customer", CreateCustomerInvite)
+	http.HandleFunc("/find/without-link", FindFingerprint)
+	http.HandleFunc("/find/with-link", GetDirectLinkPayload)
 
 }
 
 // TODO:сделать три метода на каждый ивент
-func CreateDirectLink(w http.ResponseWriter, r *http.Request) {
+func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Unable to read body", http.StatusBadRequest)
@@ -53,7 +52,63 @@ func CreateDirectLink(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	directLink := models.DirectLink{ID: id, Payload: particalDirectLink.Payload, Event: particalDirectLink.Event}
+	directLink := models.DirectLink{ID: id, Payload: particalDirectLink.Payload, Event: string(models.EmployeerInvite)}
+
+	if err := DB.Create(&directLink).Error; err != nil {
+		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "URL created successfully")
+}
+
+func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var particalDirectLink models.ParticalDirectLink
+	err = json.Unmarshal(body, &particalDirectLink)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	id, err := gonanoid.New(8)
+	if err != nil {
+		log.Fatal(err)
+	}
+	directLink := models.DirectLink{ID: id, Payload: particalDirectLink.Payload, Event: string(models.SalonInvite)}
+
+	if err := DB.Create(&directLink).Error; err != nil {
+		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "URL created successfully")
+}
+
+func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var particalDirectLink models.ParticalDirectLink
+	err = json.Unmarshal(body, &particalDirectLink)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	id, err := gonanoid.New(8)
+	if err != nil {
+		log.Fatal(err)
+	}
+	directLink := models.DirectLink{ID: id, Payload: particalDirectLink.Payload, Event: string(models.CustomerInvite)}
 
 	if err := DB.Create(&directLink).Error; err != nil {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
@@ -81,20 +136,23 @@ func FindFingerprint(w http.ResponseWriter, r *http.Request) {
 	fingerprint := inputFingerprint.ToFingerprint(ip, nil)
 	if fingerprint == nil && inputFingerprint.UniversalLink == nil {
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	if fingerprint != nil && inputFingerprint.UniversalLink == nil {
 		var DirectLink models.DirectLink
 		DB.First(&DirectLink, "id = ?", fingerprint.DirectLinkID)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(DirectLink)
+		return
 	}
-	if fingerprint == nil && inputFingerprint.UniversalLink != nil {
+	if inputFingerprint.UniversalLink != nil {
 		DirectLink, err := models.ParseURL(*inputFingerprint.UniversalLink, DB)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(DirectLink)
+		return
 	}
 	w.WriteHeader(http.StatusNotFound)
 }
@@ -190,6 +248,47 @@ func getSalonInviteAndroid(
 
 	return modifiedHTML, nil
 }
+
+func getCustomerInviteIOS(
+	directLink models.DirectLink,
+) (string, error) {
+	htmlFile, err := os.ReadFile("static/CustomerInvite/IOS/Screen.html")
+	if err != nil {
+		return "", err
+	}
+	modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directLink.ParseToURL(), -1)
+	modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", directLink.ID, -1)
+
+	return modifiedHTML, nil
+}
+
+func getCustomerInviteAndroid(
+	directLink models.DirectLink,
+) (string, error) {
+	htmlFile, err := os.ReadFile("static/CustomerInvite/Android/Screen.html")
+	if err != nil {
+		return "", err
+	}
+
+	modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directLink.ParseToURL(), -1)
+	modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", directLink.ID, -1)
+
+	return modifiedHTML, nil
+}
+
+func getWebInvite(
+	directLink models.DirectLink,
+) (string, error) {
+	htmlFile, err := os.ReadFile("static/webScreen.html")
+	if err != nil {
+		return "", err
+	}
+	modifiedHTML := strings.Replace(string(htmlFile), "{{.DynamicUniversalLink}}", directLink.ParseToURL(), -1)
+	modifiedHTML = strings.Replace(string(modifiedHTML), "{{.LinkID}}", directLink.ID, -1)
+
+	return modifiedHTML, nil
+}
+
 func ServeHTML(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
@@ -205,7 +304,7 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 	var response string
 	var err error
 	switch {
-	case strings.Contains(userAgent, "iPhone") && directLink.Event == string(models.EmployeerInvite):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.EmployeerInvite):
 		response, err = getEmployeeInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -219,7 +318,7 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	case strings.Contains(userAgent, "iPhone") && directLink.Event == string(models.SalonInvite):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.SalonInvite):
 		response, err = getSalonInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -232,13 +331,24 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.CustomerInvite):
+		response, err = getCustomerInviteIOS(directLink)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	case strings.Contains(userAgent, "Android") && directLink.Event == string(models.CustomerInvite):
+		response, err = getCustomerInviteAndroid(directLink)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 	default:
-		htmlFile, err := os.ReadFile("static/webScreen.html")
+		response, err = getWebInvite(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		response = string(htmlFile)
 	}
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(response))
@@ -257,11 +367,28 @@ func CollectDataPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
 		return
 	}
+	var fingerprintInfo models.Fingerprint = data.ToFingerprint()
+	ipParts := strings.Split(r.RemoteAddr, ":")
+	if len(ipParts) == 2 {
+		fingerprintInfo.IP = ipParts[0]
+	} else {
+		fmt.Println("Некорректный формат строки")
+	}
+	var existingFingerprint *models.Fingerprint = services.FindFingerprint(fingerprintInfo, DB)
+	if existingFingerprint != nil {
+		if err := DB.Create(&fingerprintInfo).Error; err != nil {
+			http.Error(w, "Failed to create fingerprint info", http.StatusInternalServerError)
+			return
+		}
+		DB.Delete(&existingFingerprint)
+	} else {
+		DB.Create(&fingerprintInfo)
+	}
 
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	log.Printf("Получены данные клиента: %+v\n", data)
-	fmt.Fprintf(w, "Данные полученыфы")
+	fmt.Fprintf(w, "Данные получены")
 }
 
 func CollectDataMobile(w http.ResponseWriter, r *http.Request) {
