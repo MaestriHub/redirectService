@@ -40,9 +40,9 @@ func (du *DirectLinkBuilder) SetСlicks(clicks int) *DirectLinkBuilder {
 	return du
 }
 
-func (du *DirectLinkBuilder) Build(db *gorm.DB) (*models.DirectLink, error) {
+func (du *DirectLinkBuilder) Build(db *gorm.DB) *models.DirectLink {
 	if err := db.Create(du.directLink).Error; err != nil {
-		return nil, err
+		return nil
 	}
-	return du.directLink, nil
+	return du.directLink
 }

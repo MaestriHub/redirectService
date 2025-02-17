@@ -39,7 +39,10 @@ func FindFingerprint(data models.Fingerprint, db *gorm.DB) *models.Fingerprint {
 		query = query.Where("user_agent = ?", *data.UserAgent)
 	}
 	var existingFingerprint models.Fingerprint
-	query.First(&existingFingerprint)
+	result := query.First(&existingFingerprint)
+	if result.Error != nil {
+		return nil
+	}
 	return &existingFingerprint
 
 }

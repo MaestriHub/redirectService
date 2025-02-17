@@ -134,13 +134,14 @@ func FindFingerprint(w http.ResponseWriter, r *http.Request) {
 	}
 	ip := strings.Split(r.RemoteAddr, ":")[0]
 	fingerprint := inputFingerprint.ToFingerprint(ip, nil)
-	if fingerprint == nil && inputFingerprint.UniversalLink == nil {
+	findFingerprint := services.FindFingerprint(*fingerprint, DB)
+	if findFingerprint == nil && inputFingerprint.UniversalLink == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	if fingerprint != nil && inputFingerprint.UniversalLink == nil {
+	if findFingerprint != nil && inputFingerprint.UniversalLink == nil {
 		var DirectLink models.DirectLink
-		DB.First(&DirectLink, "id = ?", fingerprint.DirectLinkID)
+		DB.First(&DirectLink, "id = ?", findFingerprint.DirectLinkID)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(DirectLink)
 		return

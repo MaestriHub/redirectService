@@ -17,7 +17,7 @@ func NewFingerprintBuilder() *FingerprintBuilder {
 	memory := 0
 	return &FingerprintBuilder{
 		Fingerprint: &models.Fingerprint{
-			IP:             "192.168.0.111",
+			IP:             "192.0.2.1",
 			UserAgent:      &userAgent,
 			Platform:       "iPhone",
 			Version:        "18.2.1",
@@ -33,13 +33,18 @@ func NewFingerprintBuilder() *FingerprintBuilder {
 			TimeZone:       "Europe/Moscow",
 			Cores:          &cores,
 			Memory:         &memory,
-			DirectLinkID:   "1",
+			DirectLinkID:   "none",
 		},
 	}
 }
 
 func (rb *FingerprintBuilder) SetUserAgent(userAgent *string) *FingerprintBuilder {
 	rb.Fingerprint.UserAgent = userAgent
+	return rb
+}
+
+func (rb *FingerprintBuilder) SetDirectLink(directLink models.DirectLink) *FingerprintBuilder {
+	rb.Fingerprint.DirectLinkID = directLink.ID
 	return rb
 }
 
@@ -124,10 +129,14 @@ func (rb *FingerprintBuilder) SetStatuses(directLink string) *FingerprintBuilder
 }
 
 // Завершающий метод для создания и сохранения Fingerprint в базе данных
-func (rb *FingerprintBuilder) Build(db *gorm.DB) (*models.Fingerprint, error) {
+func (rb *FingerprintBuilder) Build(db *gorm.DB) *models.Fingerprint {
 	// Сохраняем Fingerprint в базу данных перед возвратом
-	if err := db.Create(rb.Fingerprint).Error; err != nil {
-		return nil, err
+	if rb.Fingerprint.DirectLinkID == "none" {
+		directLink := NewDirectLinkBuilder().Build(db)
+		rb.Fingerprint.DirectLinkID = directLink.ID
 	}
-	return rb.Fingerprint, nil
+	if err := db.Create(rb.Fingerprint).Error; err != nil {
+		return nil
+	}
+	return rb.Fingerprint
 }

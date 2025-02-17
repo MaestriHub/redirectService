@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"net/url"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -32,31 +31,35 @@ type DirectLink struct { //link.maetry.com/{NanoId
 	Event     string         `json:"event"`
 }
 
+// TODO: на каждый ивент будет своя структура, в зависимости она будет передаваться в json, хранить в бд в json
 type ParticalDirectLink struct {
 	Payload string
 }
 
+// погуглить как убрать ?code
 func (directLink DirectLink) ParseToURL() string {
 	return "https://link.maetry.com/?code=" + directLink.ID
 }
 
 func ParseURL(input string, db *gorm.DB) (*DirectLink, error) {
-	var directLink DirectLink
-
 	parsedURL, err := url.Parse(input)
 	if err != nil {
-		return nil, fmt.Errorf("invalid URL: %v", err)
-	}
-	parts := strings.Split(strings.Trim(parsedURL.Path, "/"), "/")
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("URL doesn't contain asigned parts")
+		return nil, err
 	}
 
-	db.Where("url_event = ? AND payload = ?", parts[0], parts[1]).Order("createdAt desc").First(&directLink)
-	if directLink.ID == "" {
-		return nil, fmt.Errorf("URL doesn't exist")
+	queryParams := parsedURL.Query()
+	code := queryParams.Get("code")
+
+	if code == "" {
+		return nil, fmt.Errorf("code not found in URL")
 	}
-	return &directLink, nil
+	var result DirectLink
+	db.Where("id = ?", code).First(&result)
+	if result.ID == "" {
+		return nil, fmt.Errorf("URL not found")
+	}
+
+	return &result, nil
 }
 func (directLink DirectLink) GetPayloadEmployee(db *gorm.DB) (string, string, error) {
 	var rawAnswers struct {

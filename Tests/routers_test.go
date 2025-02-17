@@ -11,35 +11,33 @@ import (
 	"testing"
 )
 
-func TestOrganicInput(t *testing.T) {
-	if DB == nil {
-		t.Fatal("DB is not initialized")
-	}
-	cores := 2
+func TestInput(t *testing.T) {
+	directLink := NewDirectLinkBuilder().Build(DB)
+	fingerprint := NewFingerprintBuilder().SetVersion("124124").SetDirectLink(*directLink).Build(DB)
+
 	input := models.ParticalFingerprint{
-		Platform:       "iPhone",
-		Version:        "12.32",
-		Language:       "ru",
-		Languages:      []string{"ru"},
-		Cores:          &cores,
-		Memory:         nil,
-		ScreenWidth:    12,
-		ScreenHeight:   15,
-		ColorDepth:     1,
-		PixelRatio:     23,
-		ViewportWidth:  21,
-		ViewportHeight: 12,
-		Renderer:       "ASF",
-		VendorRender:   nil,
-		TimeZone:       "Africa",
+		Platform:       fingerprint.Platform,
+		Version:        fingerprint.Version,
+		Language:       fingerprint.Language,
+		Languages:      fingerprint.Languages,
+		Cores:          fingerprint.Cores,
+		Memory:         fingerprint.Memory,
+		ScreenWidth:    fingerprint.ScreenWidth,
+		ScreenHeight:   fingerprint.ScreenHeight,
+		ColorDepth:     fingerprint.ColorDepth,
+		PixelRatio:     fingerprint.PixelRatio,
+		ViewportWidth:  fingerprint.ViewportWidth,
+		ViewportHeight: fingerprint.ViewportHeight,
+		Renderer:       fingerprint.Renderer,
+		VendorRender:   fingerprint.VendorRender,
+		TimeZone:       fingerprint.TimeZone,
 		UniversalLink:  nil,
 	}
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatalf("Failed to marshal data: %v", err)
 	}
-	NewFingerprintBuilder().SetVersion("124124").Build(DB)
-	req := httptest.NewRequest(http.MethodPost, "/findFingerprint", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPost, "/find/without-link", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	routers.FindFingerprint(w, req)
@@ -47,11 +45,25 @@ func TestOrganicInput(t *testing.T) {
 	res := w.Result()
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
-	t.Logf("Response body: %s", data)
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
+	var result models.DirectLink
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		t.Errorf("Ошибка парсинга JSON:%v", err)
+		return
+	}
 
+	if result.ID != directLink.ID {
+		t.Errorf("Expected %v, got %v", directLink.ID, result.ID)
+	}
+	if result.Payload != directLink.Payload {
+		t.Errorf("Expected %v, got %v", directLink.Payload, result.Payload)
+	}
+	if result.Event != directLink.Event {
+		t.Errorf("Expected %v, got %v", directLink.Event, result.Event)
+	}
 	if res.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200 OK, got %v", res.StatusCode)
 	}
