@@ -6,6 +6,8 @@ import (
 	"github.com/lib/pq"
 )
 
+//TODO: Подумать над неймингом и перенести в модель(как минимум DeviceData и тд)
+
 type PC struct {
 	UserAgent      string   `json:"userAgent"`
 	Platform       string   `json:"platform"`

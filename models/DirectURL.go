@@ -30,11 +30,11 @@ type DirectLink struct { //link.maetry.com/{NanoId
 	Event     string          `json:"event"`
 }
 
-// погуглить как убрать ?code
 func (directLink DirectLink) ParseToURL() string {
 	return "https://link.maetry.com/" + directLink.ID
 }
 
+// TODO: parsing dataa go посмотреть либы
 func ParseURL(input string, db *gorm.DB) (*DirectLink, error) {
 	parsedURL, err := url.Parse(input)
 	if err != nil {
@@ -54,6 +54,9 @@ func ParseURL(input string, db *gorm.DB) (*DirectLink, error) {
 
 	return &result, nil
 }
+
+// TODO: подумать над нейменгом функции
+// TODO: у нас есть тип салона индивидуальный мастер
 func (directLink DirectLink) GetPayloadMasterToSalon(db *gorm.DB) (string, string, error) {
 	var rawAnswers struct {
 		Name  string

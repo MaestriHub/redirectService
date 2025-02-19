@@ -29,6 +29,7 @@ func InitRouters(db *gorm.DB) {
 	http.HandleFunc("/create/employeer", CreateEmployeerInvite)
 	http.HandleFunc("/create/customer", CreateCustomerInvite)
 	http.HandleFunc("/create/master-to-salon", CreateMasterToSalonInvite)
+	// TODO: хуевый нейминг, один с фингерпринтом, другой без
 	http.HandleFunc("/find/without-link", FindFingerprint)
 	http.HandleFunc("/find/with-link", GetDirectLinkPayload)
 
@@ -60,6 +61,7 @@ func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
+	//TODO: подумать про fmt.Fprintf
 	fmt.Fprintf(w, "URL created successfully")
 }
 

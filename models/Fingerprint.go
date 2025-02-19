@@ -29,6 +29,7 @@ type Fingerprint struct {
 	DirectLinkID   string
 }
 
+// TODO: подумать над нейменгом, плюс все посмотреть мб pc, mobile, ParticalFingerprint это один обьект ?
 type ParticalFingerprint struct {
 	Platform       string         `json:"platform"`
 	Version        string         `json:"version"`
