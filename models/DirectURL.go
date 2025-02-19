@@ -30,11 +30,6 @@ type DirectLink struct { //link.maetry.com/{NanoId
 	Event     string          `json:"event"`
 }
 
-// TODO: на каждый ивент будет своя структура, в зависимости она будет передаваться в json, хранить в бд в json
-type ParticalDirectLink struct {
-	Payload json.RawMessage `json:"payload"`
-}
-
 // погуглить как убрать ?code
 func (directLink DirectLink) ParseToURL() string {
 	return "https://link.maetry.com/" + directLink.ID
