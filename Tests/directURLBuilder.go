@@ -2,7 +2,9 @@ package test
 
 import (
 	"redirectServer/models"
+	"redirectServer/models/payload"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -11,12 +13,18 @@ type DirectLinkBuilder struct {
 }
 
 func NewDirectLinkBuilder() *DirectLinkBuilder {
+	parsedUUID, _ := uuid.Parse("53bb0f86-a94e-4302-8a07-ea0b083d3bde")
+	payload := payload.MasterToSalon{
+		EmployeeId: parsedUUID,
+	}
+	directLink := models.DirectLink{
+		ID:    "YSg6Ugcf",
+		Event: "EmployeerInvite",
+	}
+	directLink.SetPayload(payload)
+
 	return &DirectLinkBuilder{
-		directLink: &models.DirectLink{
-			ID:      "YSg6Ugcf",
-			Payload: "53bb0f86-a94e-4302-8a07-ea0b083d3bde",
-			Event:   "EmployeerInvite",
-		},
+		directLink: &directLink,
 	}
 }
 
@@ -25,8 +33,9 @@ func (du *DirectLinkBuilder) SetID(id string) *DirectLinkBuilder {
 	return du
 }
 
-func (du *DirectLinkBuilder) SetPayload(payload string) *DirectLinkBuilder {
-	du.directLink.Payload = payload
+func (du *DirectLinkBuilder) SetPayload(payload payload.MasterToSalon) *DirectLinkBuilder {
+
+	du.directLink.SetPayload(payload)
 	return du
 }
 

@@ -1,13 +1,19 @@
 
 (async function () {
     await getPCData();
-    generateQRCode()
+    generateQRCode();
+    document.getElementById('copyButton').addEventListener('click', () => {
+        navigator.clipboard.writeText(universalLink).then(() => {
+        }).catch(() => {
+            alert("Не asdasdудалось скопировать ссылку.");
+        });
+    });
 })();
 function generateQRCode() {
     var qrcode = new QRCode(document.getElementById("qrcode"), {
         text: universalLink,
-        width: 128,
-        height: 128,
+        width: 100,
+        height: 100,
         colorDark : "#000000",
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
@@ -32,6 +38,7 @@ async function getPCData() {
         viewportHeight: window.innerHeight,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         currentTime: new Date().toISOString(),
+        DirectLinkID: linkId,
     };
 
     await fetch('/collect/pc', {

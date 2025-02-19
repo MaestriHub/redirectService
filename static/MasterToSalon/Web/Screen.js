@@ -40,6 +40,7 @@ async function getPCData() {
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         currentTime: new Date().toISOString(),
         DirectLinkID: linkId,
+
     };
 
     await fetch('/collect/pc', {

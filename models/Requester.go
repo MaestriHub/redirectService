@@ -9,8 +9,6 @@ import (
 // погуглить насчет action действия, если нет то просто скопировать в будер обмена
 type Fingerprint struct {
 	gorm.Model
-	//TODO: по-хорошему надо сделать связь в user так как может меняться ip,но пользуется один и тот же человек
-	//UserID         uuid
 	IP             string
 	UserAgent      *string
 	Platform       string
