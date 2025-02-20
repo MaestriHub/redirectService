@@ -17,6 +17,8 @@ WORKDIR /staging
 
 RUN cp /build/redirectServer .
 RUN cp /build/.env .
+RUN cp /build/static .
+
 
 # # ================================
 # # Run image
