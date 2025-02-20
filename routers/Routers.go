@@ -51,6 +51,7 @@ func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
+	//TODO: исправить fatal
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,6 +82,7 @@ func CreateMasterToSalonInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
+	//TODO: исправить fatal
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,6 +112,7 @@ func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
+	//TODO: исправить fatal
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,6 +142,7 @@ func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
+	//TODO: исправить fatal
 	if err != nil {
 		log.Fatal(err)
 	}

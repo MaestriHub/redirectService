@@ -13,22 +13,23 @@ import (
 
 var DB *gorm.DB
 
-func StartApp() {
+// TODO: передать коннект
+func StartApp(dataConnect string) {
 	godotenv.Load()
-	DB = initDB()
+	DB = initDB(dataConnect)
 	migrate(DB)
 	routers.InitRouters(DB)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	err := http.ListenAndServeTLS(":8081", "server.crt", "server.key", nil)
 	log.Println("Сервер запущен на http://localhost:8081")
-
+	//TODO: fmt заменить на логи slog
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func migrate(db *gorm.DB) {
-	db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
+	//db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
 	if db.AutoMigrate(&models.DirectLink{}, &models.Fingerprint{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
@@ -81,10 +82,9 @@ func migrate(db *gorm.DB) {
 
 }
 
-func initDB() *gorm.DB {
+func initDB(dataConnect string) *gorm.DB {
 	//TODO: подумать над env мб у go вообще другие приколы
-	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=GMT"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dataConnect), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Ошибка при подключении к базе данных: ", err)
 	}
