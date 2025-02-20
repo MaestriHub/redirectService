@@ -1,5 +1,4 @@
-FROM golang:alpine as build
-FROM --platform=linux/amd64 python:3.9-slim
+FROM --platform=linux/amd64 golang:alpine as build
 
 # Install OS updates
 RUN apk update && apk upgrade
@@ -23,8 +22,7 @@ RUN cp /build/.env .
 # # Run image
 # # ================================
 
-FROM alpine:latest
-FROM --platform=linux/amd64 python:3.9-slim
+FROM --platform=linux/amd64 alpine:latest
 
 # # Make sure all system packages are up to date, and install only essential packages.
 RUN apk update && apk upgrade
