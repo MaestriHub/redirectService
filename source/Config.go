@@ -21,8 +21,7 @@ func StartApp() {
 	migrate(DB)
 	routers.InitRouters(DB)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	err := http.ListenAndServeTLS(":8081", "server.crt", "server.key", nil)
-	log.Println("Сервер запущен на http://localhost:8081")
+	err := http.ListenAndServe(":8080", nil)
 	//TODO: fmt заменить на логи slog
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +91,7 @@ func initDB() *gorm.DB {
 	dbPass := os.Getenv("DATABASE_PASSWORD")
 	dbPort := os.Getenv("DATABASE_PORT")
 	dbName := os.Getenv("DATABASE_NAME")
-	dbUser := os.Getenv("DATABASE_NAME")
+	dbUser := os.Getenv("DATABASE_USERNAME")
 
 	dataConnect := "host=" + dbHost + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable TimeZone=GMT"
 	//TODO: подумать над env мб у go вообще другие приколы

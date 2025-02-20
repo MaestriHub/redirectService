@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,11 +18,12 @@ import (
 )
 
 var DB *gorm.DB
-var logger slog.Logger
+var logger *slog.Logger
 
 func InitRouters(db *gorm.DB) {
 	DB = db
-	//logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger.Info("Routers initialized")
 	http.HandleFunc("/", ServeHTML)
 	http.HandleFunc("/collect/pc", CollectDataPC)
 	http.HandleFunc("/collect/mobile", CollectDataMobile)
@@ -65,7 +65,7 @@ func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//TODO: подумать про fmt.Fprintf
-	fmt.Fprintf(w, "URL created successfully")
+	logger.Info("URL created successfully")
 }
 
 func CreateMasterToSalonInvite(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +95,7 @@ func CreateMasterToSalonInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "URL created successfully")
+	logger.Info("URL created successfully")
 }
 
 func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,7 @@ func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "URL created successfully")
+	logger.Info("URL created successfully")
 }
 
 func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +155,7 @@ func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "URL created successfully")
+	logger.Info("URL created successfully")
 }
 
 func FindFingerprint(w http.ResponseWriter, r *http.Request) {
@@ -517,14 +517,12 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 
 func CollectDataPC(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		log.Println("Неверный метод:", r.Method)
 		http.Error(w, "Только POST-запросы поддерживаются", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var data clientData.PC
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		log.Println("Ошибка декодирования данных:", err)
 		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
 		return
 	}
@@ -533,7 +531,7 @@ func CollectDataPC(w http.ResponseWriter, r *http.Request) {
 	if len(ipParts) == 2 {
 		fingerprintInfo.IP = ipParts[0]
 	} else {
-		fmt.Println("Некорректный формат строки")
+		logger.Info("Некорректный формат строки")
 	}
 	var existingFingerprint *models.Fingerprint = services.FindFingerprint(fingerprintInfo, DB)
 	if existingFingerprint != nil {
@@ -547,21 +545,17 @@ func CollectDataPC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	log.Printf("Получены данные клиента: %+v\n", data)
-	fmt.Fprintf(w, "Данные получены")
+	logger.Info("Данные получены")
 }
 
 func CollectDataMobile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		log.Println("Неверный метод:", r.Method)
 		http.Error(w, "Только POST-запросы поддерживаются", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var data clientData.Mobile
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		log.Println("Ошибка декодирования данных:", err)
 		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
 		return
 	}
@@ -584,7 +578,5 @@ func CollectDataMobile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	log.Printf("Получены данные клиента: %+v\n", data)
-	fmt.Fprintf(w, "Данные получены")
+	logger.Info("Данные получены")
 }
