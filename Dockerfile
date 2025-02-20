@@ -1,4 +1,5 @@
 FROM golang:alpine as build
+FROM --platform=linux/amd64 python:3.9-slim
 
 # Install OS updates
 RUN apk update && apk upgrade
@@ -16,12 +17,14 @@ RUN go build
 WORKDIR /staging
 
 RUN cp /build/redirectServer .
+RUN cp /build/.env .
 
 # # ================================
 # # Run image
 # # ================================
 
 FROM alpine:latest
+FROM --platform=linux/amd64 python:3.9-slim
 
 # # Make sure all system packages are up to date, and install only essential packages.
 RUN apk update && apk upgrade
