@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"redirectServer/clientData"
@@ -18,10 +19,11 @@ import (
 )
 
 var DB *gorm.DB
+var logger slog.Logger
 
 func InitRouters(db *gorm.DB) {
 	DB = db
-
+	//logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	http.HandleFunc("/", ServeHTML)
 	http.HandleFunc("/collect/pc", CollectDataPC)
 	http.HandleFunc("/collect/mobile", CollectDataMobile)
@@ -51,9 +53,9 @@ func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
-	//TODO: исправить fatal
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
+		return
 	}
 	directLink := models.DirectLink{ID: id, Event: string(models.EmployeerInvite)}
 	directLink.SetPayload(payloadObject)
@@ -82,9 +84,9 @@ func CreateMasterToSalonInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
-	//TODO: исправить fatal
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
+		return
 	}
 	directLink := models.DirectLink{ID: id, Event: string(models.MasterInviteToSalon)}
 	directLink.SetPayload(payloadObject)
@@ -112,9 +114,9 @@ func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
-	//TODO: исправить fatal
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
+		return
 	}
 	directLink := models.DirectLink{ID: id, Event: string(models.SalonInvite)}
 	directLink.SetPayload(payloadObject)
@@ -142,9 +144,9 @@ func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := gonanoid.New(8)
-	//TODO: исправить fatal
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
+		return
 	}
 	directLink := models.DirectLink{ID: id, Event: string(models.CustomerInvite)}
 	directLink.SetPayload(payloadObject)

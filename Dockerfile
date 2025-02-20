@@ -15,7 +15,7 @@ RUN go build
 
 WORKDIR /staging
 
-RUN cp /build/server .
+RUN cp /build/redirectServer .
 
 # # ================================
 # # Run image
