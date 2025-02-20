@@ -3,6 +3,7 @@ package source
 import (
 	"log"
 	"net/http"
+	"os"
 	"redirectServer/models"
 	"redirectServer/routers"
 
@@ -14,9 +15,9 @@ import (
 var DB *gorm.DB
 
 // TODO: передать коннект
-func StartApp(dataConnect string) {
+func StartApp() {
 	godotenv.Load()
-	DB = initDB(dataConnect)
+	DB = initDB()
 	migrate(DB)
 	routers.InitRouters(DB)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -82,7 +83,18 @@ func migrate(db *gorm.DB) {
 
 }
 
-func initDB(dataConnect string) *gorm.DB {
+func initDB() *gorm.DB {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Ошибка загрузки .env файла:", err)
+	}
+	dbHost := os.Getenv("DATABASE_HOST")
+	dbPass := os.Getenv("DATABASE_PASSWORD")
+	dbPort := os.Getenv("DATABASE_PORT")
+	dbName := os.Getenv("DATABASE_NAME")
+	dbUser := os.Getenv("DATABASE_NAME")
+
+	dataConnect := "host=" + dbHost + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable TimeZone=GMT"
 	//TODO: подумать над env мб у go вообще другие приколы
 	db, err := gorm.Open(postgres.Open(dataConnect), &gorm.Config{})
 	if err != nil {
