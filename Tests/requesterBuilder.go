@@ -1,14 +1,14 @@
 package test
 
 import (
-	"redirectServer/models"
+	"redirectServer/model"
 
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 type FingerprintBuilder struct {
-	Fingerprint *models.Fingerprint
+	Fingerprint *model.Fingerprint
 }
 
 func NewFingerprintBuilder() *FingerprintBuilder {
@@ -16,7 +16,7 @@ func NewFingerprintBuilder() *FingerprintBuilder {
 	cores := 4
 	memory := 0
 	return &FingerprintBuilder{
-		Fingerprint: &models.Fingerprint{
+		Fingerprint: &model.Fingerprint{
 			IP:             "192.0.2.1",
 			UserAgent:      &userAgent,
 			Platform:       "iPhone",
@@ -43,7 +43,7 @@ func (rb *FingerprintBuilder) SetUserAgent(userAgent *string) *FingerprintBuilde
 	return rb
 }
 
-func (rb *FingerprintBuilder) SetDirectLink(directLink models.DirectLink) *FingerprintBuilder {
+func (rb *FingerprintBuilder) SetDirectLink(directLink model.DirectLink) *FingerprintBuilder {
 	rb.Fingerprint.DirectLinkID = directLink.ID
 	return rb
 }
@@ -129,7 +129,7 @@ func (rb *FingerprintBuilder) SetStatuses(directLink string) *FingerprintBuilder
 }
 
 // Завершающий метод для создания и сохранения Fingerprint в базе данных
-func (rb *FingerprintBuilder) Build(db *gorm.DB) *models.Fingerprint {
+func (rb *FingerprintBuilder) Build(db *gorm.DB) *model.Fingerprint {
 	// Сохраняем Fingerprint в базу данных перед возвратом
 	if rb.Fingerprint.DirectLinkID == "none" {
 		directLink := NewDirectLinkBuilder().Build(db)

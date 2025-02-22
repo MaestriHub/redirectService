@@ -1,36 +1,12 @@
-package models
+package dto
 
 import (
+	"redirectServer/model"
+
 	"github.com/lib/pq"
-	"gorm.io/gorm"
 )
 
-// TODO: кноака отправить ссыфлку.
-// погуглить насчет action действия, если нет то просто скопировать в будер обмена
-type Fingerprint struct {
-	gorm.Model
-	IP             string
-	UserAgent      *string
-	Platform       string
-	Version        string
-	Language       string
-	Languages      pq.StringArray `gorm:"type:text[]" `
-	Cores          *int           `gorm:"default:null"`
-	Memory         *int           `gorm:"default:null"`
-	ScreenWidth    int
-	ScreenHeight   int
-	ColorDepth     int
-	PixelRatio     float64
-	ViewportWidth  int
-	ViewportHeight int
-	Renderer       string
-	VendorRender   *string
-	TimeZone       string
-	DirectLinkID   string
-}
-
-// TODO: подумать над нейменгом, плюс все посмотреть мб pc, mobile, ParticalFingerprint это один обьект ?
-type ParticalFingerprint struct {
+type FingerprintIOS struct {
 	Platform       string         `json:"platform"`
 	Version        string         `json:"version"`
 	Language       string         `json:"language"`
@@ -49,8 +25,8 @@ type ParticalFingerprint struct {
 	UniversalLink  *string `json:"universalLink"`
 }
 
-func (p *ParticalFingerprint) ToFingerprint(ip string, userAgent *string) *Fingerprint {
-	return &Fingerprint{
+func (p *FingerprintIOS) ToFingerprint(ip string, userAgent *string) *model.Fingerprint {
+	return &model.Fingerprint{
 		IP:             ip,
 		UserAgent:      userAgent,
 		Platform:       p.Platform,

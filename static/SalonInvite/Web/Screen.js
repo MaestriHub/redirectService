@@ -42,7 +42,7 @@ async function getPCData() {
         DirectLinkID: linkId,
     };
 
-    await fetch('/collect/pc', {
+    await fetch('/collect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),

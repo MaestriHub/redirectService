@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"redirectServer/models"
+	"redirectServer/model"
 	"redirectServer/routers"
 
 	"github.com/joho/godotenv"
@@ -14,7 +14,6 @@ import (
 
 var DB *gorm.DB
 
-// TODO: передать коннект
 func StartApp() {
 	godotenv.Load()
 	DB = initDB()
@@ -22,15 +21,14 @@ func StartApp() {
 	routers.InitRouters(DB)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	err := http.ListenAndServe(":8080", nil)
-	//TODO: fmt заменить на логи slog
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func migrate(db *gorm.DB) {
-	//db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
-	if db.AutoMigrate(&models.DirectLink{}, &models.Fingerprint{}) != nil {
+	//db.Migrator().DropTable(&model.DirectLink{}, &model.Fingerprint{})
+	if db.AutoMigrate(&model.DirectLink{}, &model.Fingerprint{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
 
@@ -38,9 +36,9 @@ func migrate(db *gorm.DB) {
 	// payload1 := payload.Salon{
 	// 	ID: parsedUUID,
 	// }
-	// var directLink = models.DirectLink{
+	// var directLink = model.DirectLink{
 	// 	ID:    "YSg6UgcF",
-	// 	Event: string(models.SalonInvite),
+	// 	Event: string(model.SalonInvite),
 	// }
 	// directLink.SetPayload(payload1)
 	// db.Create(&directLink)
@@ -49,9 +47,9 @@ func migrate(db *gorm.DB) {
 	// payload2 := payload.MasterToSalon{
 	// 	EmployeeId: parsedUUID,
 	// }
-	// directLink = models.DirectLink{
+	// directLink = model.DirectLink{
 	// 	ID:    "YSg6Ugcf",
-	// 	Event: string(models.MasterInviteToSalon),
+	// 	Event: string(model.MasterInviteToSalon),
 	// }
 	// directLink.SetPayload(payload2)
 	// db.Create(&directLink)
@@ -60,9 +58,9 @@ func migrate(db *gorm.DB) {
 	// payload3 := payload.Customer{
 	// 	ID: parsedUUID,
 	// }
-	// directLink = models.DirectLink{
+	// directLink = model.DirectLink{
 	// 	ID:    "YSg6Ugc",
-	// 	Event: string(models.CustomerInvite),
+	// 	Event: string(model.CustomerInvite),
 	// }
 	// directLink.SetPayload(payload3)
 	// db.Create(&directLink)
@@ -73,9 +71,9 @@ func migrate(db *gorm.DB) {
 	// 	ID:      parsedUUID2,
 	// 	SalonId: parsedUUID,
 	// }
-	// directLink = models.DirectLink{
+	// directLink = model.DirectLink{
 	// 	ID:    "YSg6UgC",
-	// 	Event: string(models.EmployeerInvite),
+	// 	Event: string(model.EmployeerInvite),
 	// }
 	// directLink.SetPayload(payload4)
 	// db.Create(&directLink)
@@ -94,7 +92,6 @@ func initDB() *gorm.DB {
 	dbUser := os.Getenv("DATABASE_USERNAME")
 
 	dataConnect := "host=" + dbHost + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " port=" + dbPort + " sslmode=disable TimeZone=GMT"
-	//TODO: подумать над env мб у go вообще другие приколы
 	db, err := gorm.Open(postgres.Open(dataConnect), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Ошибка при подключении к базе данных: ", err)

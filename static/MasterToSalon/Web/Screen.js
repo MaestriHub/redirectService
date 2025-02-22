@@ -43,7 +43,7 @@ async function getPCData() {
 
     };
 
-    await fetch('/collect/pc', {
+    await fetch('/collect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),

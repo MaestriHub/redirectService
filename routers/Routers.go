@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"redirectServer/clientData"
-	"redirectServer/models"
-	"redirectServer/models/payload"
+	"redirectServer/dto"
+	"redirectServer/model"
+	"redirectServer/model/payload"
 	"redirectServer/services"
 	"strings"
 
@@ -25,8 +25,7 @@ func InitRouters(db *gorm.DB) {
 	logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	logger.Info("Routers initialized")
 	http.HandleFunc("/", ServeHTML)
-	http.HandleFunc("/collect/pc", CollectDataPC)
-	http.HandleFunc("/collect/mobile", CollectDataMobile)
+	http.HandleFunc("/collect", CollectData)
 	http.HandleFunc("/create/salon", CreateSalonInvite)
 	http.HandleFunc("/create/employeer", CreateEmployeerInvite)
 	http.HandleFunc("/create/customer", CreateCustomerInvite)
@@ -57,14 +56,13 @@ func CreateEmployeerInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
 		return
 	}
-	directLink := models.DirectLink{ID: id, Event: string(models.EmployeerInvite)}
+	directLink := model.DirectLink{ID: id, Event: string(model.EmployeerInvite)}
 	directLink.SetPayload(payloadObject)
 
 	if err := DB.Create(&directLink).Error; err != nil {
 		http.Error(w, "Failed to create direct URL", http.StatusInternalServerError)
 		return
 	}
-	//TODO: подумать про fmt.Fprintf
 	logger.Info("URL created successfully")
 }
 
@@ -88,7 +86,7 @@ func CreateMasterToSalonInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
 		return
 	}
-	directLink := models.DirectLink{ID: id, Event: string(models.MasterInviteToSalon)}
+	directLink := model.DirectLink{ID: id, Event: string(model.MasterInviteToSalon)}
 	directLink.SetPayload(payloadObject)
 
 	if err := DB.Create(&directLink).Error; err != nil {
@@ -118,7 +116,7 @@ func CreateSalonInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
 		return
 	}
-	directLink := models.DirectLink{ID: id, Event: string(models.SalonInvite)}
+	directLink := model.DirectLink{ID: id, Event: string(model.SalonInvite)}
 	directLink.SetPayload(payloadObject)
 
 	if err := DB.Create(&directLink).Error; err != nil {
@@ -148,7 +146,7 @@ func CreateCustomerInvite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create nanoId", http.StatusInternalServerError)
 		return
 	}
-	directLink := models.DirectLink{ID: id, Event: string(models.CustomerInvite)}
+	directLink := model.DirectLink{ID: id, Event: string(model.CustomerInvite)}
 	directLink.SetPayload(payloadObject)
 
 	if err := DB.Create(&directLink).Error; err != nil {
@@ -167,7 +165,7 @@ func FindFingerprint(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	var inputFingerprint models.ParticalFingerprint
+	var inputFingerprint dto.FingerprintIOS
 	err = json.Unmarshal(body, &inputFingerprint)
 	if err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
@@ -181,14 +179,14 @@ func FindFingerprint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if findFingerprint != nil && inputFingerprint.UniversalLink == nil {
-		var DirectLink models.DirectLink
+		var DirectLink model.DirectLink
 		DB.First(&DirectLink, "id = ?", findFingerprint.DirectLinkID)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(DirectLink)
 		return
 	}
 	if inputFingerprint.UniversalLink != nil {
-		DirectLink, err := models.ParseURL(*inputFingerprint.UniversalLink, DB)
+		DirectLink, err := model.ParseURL(*inputFingerprint.UniversalLink, DB)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -204,7 +202,7 @@ func GetDirectLinkPayload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing query parameter 'code'", http.StatusBadRequest)
 		return
 	}
-	var directLink models.DirectLink
+	var directLink model.DirectLink
 	if DB.First(&directLink, "id = ?", code).Error != nil {
 		http.Error(w, "URL not found", http.StatusNotFound)
 		return
@@ -216,7 +214,7 @@ func GetDirectLinkPayload(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMasterToSalonInviteIOS(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/MasterToSalon/IOS/Screen.html")
 	if err != nil {
@@ -235,7 +233,7 @@ func getMasterToSalonInviteIOS(
 }
 
 func getMasterToSalonInviteAndroid(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/MasterToSalon/Android/Screen.html")
 	if err != nil {
@@ -254,7 +252,7 @@ func getMasterToSalonInviteAndroid(
 }
 
 func getMasterToSalonInviteWeb(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/MasterToSalon/Web/Screen.html")
 	if err != nil {
@@ -273,7 +271,7 @@ func getMasterToSalonInviteWeb(
 }
 
 func getSalonInviteIOS(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/SalonInvite/IOS/Screen.html")
 	if err != nil {
@@ -292,7 +290,7 @@ func getSalonInviteIOS(
 }
 
 func getSalonInviteAndroid(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/SalonInvite/Android/Screen.html")
 	if err != nil {
@@ -311,7 +309,7 @@ func getSalonInviteAndroid(
 }
 
 func getSalonInviteWeb(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/SalonInvite/Web/Screen.html")
 	if err != nil {
@@ -330,7 +328,7 @@ func getSalonInviteWeb(
 }
 
 func getCustomerInviteIOS(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/CustomerInvite/IOS/Screen.html")
 	if err != nil {
@@ -343,7 +341,7 @@ func getCustomerInviteIOS(
 }
 
 func getCustomerInviteAndroid(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/CustomerInvite/Android/Screen.html")
 	if err != nil {
@@ -357,7 +355,7 @@ func getCustomerInviteAndroid(
 }
 
 func getCustomerInviteWeb(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/CustomerInvite/Web/Screen.html")
 	if err != nil {
@@ -371,7 +369,7 @@ func getCustomerInviteWeb(
 }
 
 func getEmployeerInviteIOS(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/EmployeerInvite/IOS/Screen.html")
 	if err != nil {
@@ -384,7 +382,7 @@ func getEmployeerInviteIOS(
 }
 
 func getEmployeerInviteAndroid(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/EmployeerInvite/Android/Screen.html")
 	if err != nil {
@@ -398,7 +396,7 @@ func getEmployeerInviteAndroid(
 }
 
 func getEmployeerInviteWeb(
-	directLink models.DirectLink,
+	directLink model.DirectLink,
 ) (string, error) {
 	htmlFile, err := os.ReadFile("static/EmployeerInvite/Web/Screen.html")
 	if err != nil {
@@ -417,7 +415,7 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing query parameter 'code'", http.StatusBadRequest)
 		return
 	}
-	var directLink models.DirectLink
+	var directLink model.DirectLink
 	result := DB.First(&directLink, "id = ?", code)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusNotFound)
@@ -430,52 +428,52 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 	var response string
 	var err error
 	switch {
-	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.MasterInviteToSalon):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(model.MasterInviteToSalon):
 		response, err = getMasterToSalonInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-	case strings.Contains(userAgent, "Android") && directLink.Event == string(models.MasterInviteToSalon):
+	case strings.Contains(userAgent, "Android") && directLink.Event == string(model.MasterInviteToSalon):
 		response, err = getMasterToSalonInviteAndroid(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.SalonInvite):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(model.SalonInvite):
 		response, err = getSalonInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-	case strings.Contains(userAgent, "Android") && directLink.Event == string(models.SalonInvite):
+	case strings.Contains(userAgent, "Android") && directLink.Event == string(model.SalonInvite):
 		response, err = getSalonInviteAndroid(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.CustomerInvite):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(model.CustomerInvite):
 		response, err = getCustomerInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case strings.Contains(userAgent, "Android") && directLink.Event == string(models.CustomerInvite):
+	case strings.Contains(userAgent, "Android") && directLink.Event == string(model.CustomerInvite):
 		response, err = getCustomerInviteAndroid(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(models.EmployeerInvite):
+	case (strings.Contains(userAgent, "iPhone") || strings.Contains(userAgent, "iPad")) && directLink.Event == string(model.EmployeerInvite):
 		response, err = getEmployeerInviteIOS(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case strings.Contains(userAgent, "Android") && directLink.Event == string(models.EmployeerInvite):
+	case strings.Contains(userAgent, "Android") && directLink.Event == string(model.EmployeerInvite):
 		response, err = getEmployeerInviteAndroid(directLink)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -483,25 +481,25 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 		}
 
 	default:
-		if directLink.Event == string(models.MasterInviteToSalon) {
+		if directLink.Event == string(model.MasterInviteToSalon) {
 			response, err = getMasterToSalonInviteWeb(directLink)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else if directLink.Event == string(models.SalonInvite) {
+		} else if directLink.Event == string(model.SalonInvite) {
 			response, err = getSalonInviteWeb(directLink)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else if directLink.Event == string(models.CustomerInvite) {
+		} else if directLink.Event == string(model.CustomerInvite) {
 			response, err = getCustomerInviteWeb(directLink)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else if directLink.Event == string(models.EmployeerInvite) {
+		} else if directLink.Event == string(model.EmployeerInvite) {
 			response, err = getEmployeerInviteWeb(directLink)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -515,58 +513,25 @@ func ServeHTML(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func CollectDataPC(w http.ResponseWriter, r *http.Request) {
+func CollectData(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Только POST-запросы поддерживаются", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var data clientData.PC
+	var data dto.FingerprintJS
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
 		return
 	}
-	var fingerprintInfo models.Fingerprint = data.ToFingerprint()
-	ipParts := strings.Split(r.RemoteAddr, ":")
-	if len(ipParts) == 2 {
-		fingerprintInfo.IP = ipParts[0]
-	} else {
-		logger.Info("Некорректный формат строки")
-	}
-	var existingFingerprint *models.Fingerprint = services.FindFingerprint(fingerprintInfo, DB)
-	if existingFingerprint != nil {
-		if err := DB.Create(&fingerprintInfo).Error; err != nil {
-			http.Error(w, "Failed to create fingerprint info", http.StatusInternalServerError)
-			return
-		}
-		DB.Delete(&existingFingerprint)
-	} else {
-		DB.Create(&fingerprintInfo)
-	}
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	logger.Info("Данные получены")
-}
-
-func CollectDataMobile(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Только POST-запросы поддерживаются", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var data clientData.Mobile
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, "Ошибка декодирования данных", http.StatusBadRequest)
-		return
-	}
-	var fingerprintInfo models.Fingerprint = data.ToFingerprint()
+	var fingerprintInfo model.Fingerprint = data.ToFingerprint()
 	ipParts := strings.Split(r.RemoteAddr, ":")
 	if len(ipParts) == 2 {
 		fingerprintInfo.IP = ipParts[0]
 	} else {
 		fmt.Println("Некорректный формат строки")
 	}
-	var existingFingerprint *models.Fingerprint = services.FindFingerprint(fingerprintInfo, DB)
+	var existingFingerprint *model.Fingerprint = services.FindFingerprint(fingerprintInfo, DB)
 	if existingFingerprint != nil {
 		if err := DB.Create(&fingerprintInfo).Error; err != nil {
 			http.Error(w, "Failed to create fingerprint info", http.StatusInternalServerError)

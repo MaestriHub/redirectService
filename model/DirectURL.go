@@ -1,10 +1,10 @@
-package models
+package model
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"redirectServer/models/payload"
+	"redirectServer/model/payload"
 	"strings"
 	"time"
 

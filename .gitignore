@@ -1,0 +1,7 @@
+server.crt
+server.csr
+server.key
+.env
+.vscode
+go.mod
+go.sum

@@ -6,8 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"redirectServer/models"
-	"redirectServer/models/payload"
+	"redirectServer/dto"
+	"redirectServer/model"
+	"redirectServer/model/payload"
 	"redirectServer/routers"
 	"testing"
 
@@ -96,7 +97,7 @@ func TestWithoutLinkInput(t *testing.T) {
 	directLink := NewDirectLinkBuilder().Build(DB)
 	fingerprint := NewFingerprintBuilder().SetVersion("124124").SetDirectLink(*directLink).Build(DB)
 
-	input := models.ParticalFingerprint{
+	input := dto.FingerprintIOS{
 		Platform:       fingerprint.Platform,
 		Version:        fingerprint.Version,
 		Language:       fingerprint.Language,
@@ -129,7 +130,7 @@ func TestWithoutLinkInput(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
-	var result models.DirectLink
+	var result model.DirectLink
 	err = json.Unmarshal(data, &result)
 	if err != nil {
 		t.Errorf("Ошибка парсинга JSON:%v", err)
@@ -152,7 +153,7 @@ func TestWithLinkInput(t *testing.T) {
 	directLink := NewDirectLinkBuilder().Build(DB)
 	fingerprint := NewFingerprintBuilder().SetVersion("124124").SetDirectLink(*directLink).Build(DB)
 	link := directLink.ParseToURL()
-	input := models.ParticalFingerprint{
+	input := dto.FingerprintIOS{
 		Platform:       fingerprint.Platform,
 		Version:        "hueta",
 		Language:       fingerprint.Language,
@@ -185,7 +186,7 @@ func TestWithLinkInput(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
-	var result models.DirectLink
+	var result model.DirectLink
 	err = json.Unmarshal(data, &result)
 	if err != nil {
 		t.Errorf("Ошибка парсинга JSON:%v", err)
@@ -207,7 +208,7 @@ func TestWithLinkInput(t *testing.T) {
 func TestNonFound(t *testing.T) {
 	directLink := NewDirectLinkBuilder().Build(DB)
 	fingerprint := NewFingerprintBuilder().SetVersion("124124").SetDirectLink(*directLink).Build(DB)
-	input := models.ParticalFingerprint{
+	input := dto.FingerprintIOS{
 		Platform:       fingerprint.Platform,
 		Version:        "hueta",
 		Language:       fingerprint.Language,
@@ -257,7 +258,7 @@ func TestGetDirectLink(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
-	var result models.DirectLink
+	var result model.DirectLink
 	err = json.Unmarshal(data, &result)
 	if err != nil {
 		t.Errorf("Ошибка парсинга JSON:%v", err)

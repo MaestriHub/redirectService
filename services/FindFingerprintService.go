@@ -1,14 +1,14 @@
 package services
 
 import (
-	"redirectServer/models"
+	"redirectServer/model"
 
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 // TODO: добавить условие на дату
-func FindFingerprint(data models.Fingerprint, db *gorm.DB) *models.Fingerprint {
+func FindFingerprint(data model.Fingerprint, db *gorm.DB) *model.Fingerprint {
 	conditions := map[string]interface{}{
 		"ip":        data.IP,
 		"platform":  data.Platform,
@@ -38,7 +38,7 @@ func FindFingerprint(data models.Fingerprint, db *gorm.DB) *models.Fingerprint {
 	if data.UserAgent != nil {
 		query = query.Where("user_agent = ?", *data.UserAgent)
 	}
-	var existingFingerprint models.Fingerprint
+	var existingFingerprint model.Fingerprint
 	result := query.First(&existingFingerprint)
 	if result.Error != nil {
 		return nil

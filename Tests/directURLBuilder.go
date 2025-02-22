@@ -1,15 +1,15 @@
 package test
 
 import (
-	"redirectServer/models"
-	"redirectServer/models/payload"
+	"redirectServer/model"
+	"redirectServer/model/payload"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type DirectLinkBuilder struct {
-	directLink *models.DirectLink
+	directLink *model.DirectLink
 }
 
 func NewDirectLinkBuilder() *DirectLinkBuilder {
@@ -17,7 +17,7 @@ func NewDirectLinkBuilder() *DirectLinkBuilder {
 	payload := payload.MasterToSalon{
 		EmployeeId: parsedUUID,
 	}
-	directLink := models.DirectLink{
+	directLink := model.DirectLink{
 		ID:    "YSg6Ugcf",
 		Event: "EmployeerInvite",
 	}
@@ -49,7 +49,7 @@ func (du *DirectLinkBuilder) SetСlicks(clicks int) *DirectLinkBuilder {
 	return du
 }
 
-func (du *DirectLinkBuilder) Build(db *gorm.DB) *models.DirectLink {
+func (du *DirectLinkBuilder) Build(db *gorm.DB) *model.DirectLink {
 	if err := db.Create(du.directLink).Error; err != nil {
 		return nil
 	}

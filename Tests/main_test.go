@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"redirectServer/models"
+	"redirectServer/model"
 	"redirectServer/routers"
 	"testing"
 
@@ -36,8 +36,8 @@ func initTestDB() *gorm.DB {
 }
 
 func migrateTest(db *gorm.DB) {
-	db.Migrator().DropTable(&models.DirectLink{}, &models.Fingerprint{})
-	if db.AutoMigrate(&models.DirectLink{}, &models.Fingerprint{}) != nil {
+	db.Migrator().DropTable(&model.DirectLink{}, &model.Fingerprint{})
+	if db.AutoMigrate(&model.DirectLink{}, &model.Fingerprint{}) != nil {
 		log.Fatal("Failed to migrate database")
 	}
 
