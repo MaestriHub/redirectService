@@ -19,7 +19,6 @@ RUN cp /build/redirectServer .
 RUN cp /build/.env .
 RUN cp -r /build/static .
 
-
 # # ================================
 # # Run image
 # # ================================
