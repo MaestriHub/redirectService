@@ -9,6 +9,8 @@ WORKDIR /build
 # # Copy entire repo into container
 COPY . .
 
+RUN echo .env
+
 WORKDIR /build
 
 RUN go mod tidy
@@ -18,7 +20,6 @@ RUN go build
 WORKDIR /staging
 
 RUN cp /build/redirectServer .
-RUN echo .env
 RUN cp -r /build/static .
 
 # # ================================
