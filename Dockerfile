@@ -9,7 +9,11 @@ WORKDIR /build
 # # Copy entire repo into container
 COPY . .
 
+RUN touch .env
+
 WORKDIR /build
+
+RUN go mod tidy
 
 RUN go build
 
@@ -18,7 +22,6 @@ WORKDIR /staging
 RUN cp /build/redirectServer .
 RUN cp /build/.env .
 RUN cp -r /build/static .
-
 
 # # ================================
 # # Run image
