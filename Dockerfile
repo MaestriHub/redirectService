@@ -9,7 +9,7 @@ WORKDIR /build
 # # Copy entire repo into container
 COPY . .
 
-RUN echo .env
+RUN touch .env
 
 WORKDIR /build
 
