@@ -11,6 +11,8 @@ COPY . .
 
 WORKDIR /build
 
+RUN go mod tidy
+
 RUN go build
 
 WORKDIR /staging
