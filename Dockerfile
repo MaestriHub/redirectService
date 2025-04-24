@@ -12,7 +12,7 @@ WORKDIR /build
 
 RUN go mod tidy
 
-WORKDIR/build/cmd/api
+WORKDIR /build/cmd/api
 
 RUN go build
 
