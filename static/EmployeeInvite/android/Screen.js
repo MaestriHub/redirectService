@@ -1,4 +1,4 @@
-async function getPCData() {
+async function getData() {
     const clientData = {
         userAgent: navigator.userAgent,
         language: navigator.language,
@@ -26,7 +26,7 @@ async function getPCData() {
 }
 
 (async function () {
-    await getPCData();
+    await getData();
 
     document.getElementById("copyButton").addEventListener("click", () => {
         window.location.href = appStoreLink;

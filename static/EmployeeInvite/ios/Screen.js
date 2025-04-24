@@ -1,4 +1,4 @@
-async function getPCData() {
+async function getData() {
     const clientData = {
         userAgent: navigator.userAgent,
         language: navigator.language,
@@ -6,7 +6,7 @@ async function getPCData() {
         cookiesEnabled: navigator.cookieEnabled,
         connectionType: navigator.connection,
         isOnline: navigator.onLine,
-        cores: navigator.hardwareConcurrency,
+        cores: navigator.hardwareConcurrency || 0,
         screenWidth: screen.width,
         screenHeight: screen.height,
         colorDepth: screen.colorDepth,
@@ -26,9 +26,9 @@ async function getPCData() {
 }
 
 (async function () {
-    await getPCData();
+    await getData();
 
-    document.getElementById("copyButton").addEventListener("click", () => {
+    document.getElementById('copyButton').addEventListener('click', () => {
         window.location.href = appStoreLink;
     });
 })();
