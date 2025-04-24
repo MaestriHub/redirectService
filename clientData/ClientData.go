@@ -1,12 +1,11 @@
 package clientData
 
 import (
-	"redirectServer/models"
-
 	"github.com/lib/pq"
+	"redirectServer/internal/domain"
 )
 
-//TODO: Подумать над неймингом и перенести в модель(как минимум DeviceData и тд)
+// TODO: Подумать над неймингом и перенести в модель(как минимум DeviceData и тд)
 
 type PC struct {
 	UserAgent      string   `json:"userAgent"`
@@ -49,8 +48,8 @@ type Mobile struct {
 	DirectLinkID   string   `json:"directLinkID"`
 }
 
-func (pc PC) ToFingerprint() models.Fingerprint {
-	return models.Fingerprint{
+func (pc PC) ToFingerprint() domain.Fingerprint {
+	return domain.Fingerprint{
 		UserAgent:      &pc.UserAgent,
 		Platform:       pc.Platform,
 		Language:       pc.Language,
@@ -67,8 +66,8 @@ func (pc PC) ToFingerprint() models.Fingerprint {
 		DirectLinkID:   pc.DirectLinkID,
 	}
 }
-func (mobile Mobile) ToFingerprint() models.Fingerprint {
-	return models.Fingerprint{
+func (mobile Mobile) ToFingerprint() domain.Fingerprint {
+	return domain.Fingerprint{
 		UserAgent:      &mobile.UserAgent,
 		Platform:       mobile.Platform,
 		Version:        mobile.Version,
