@@ -26,17 +26,13 @@ async function getData() {
 		DirectLinkID: linkId,
     };
 
-    await fetch('/collect/mobile', {
+    await fetch('/fingerprint/' + linkId, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clientData),
     });
 
     document.getElementById('copyButton').addEventListener('click', () => {
-        navigator.clipboard.writeText(universalLink).then(() => {
-            window.location.href = appStoreLink;
-        }).catch(() => {
-            alert("Не удалось скопировать ссылку.");
-        });
+        window.location.href = appStoreLink;
     });
 }
