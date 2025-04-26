@@ -11,7 +11,7 @@ import (
 )
 
 type MainScreenHandler interface {
-	MainScreen(ctx *gin.Context)
+	MainScreen(*gin.Context)
 }
 
 type mainScreenHandler struct {

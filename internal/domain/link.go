@@ -9,6 +9,7 @@ import (
 
 type NanoID = string
 type Payload = []byte
+
 type DirectLink struct {
 	NanoId  NanoID
 	Clicks  int     `gorm:"default:0"`
@@ -16,37 +17,18 @@ type DirectLink struct {
 	Event   string
 }
 
-func NewDirectLink(event InviteEvent, payload Payload) *DirectLink {
+func NewDirectLink(event InviteEvent) (*DirectLink, error) {
+	payload, err := json.Marshal(event)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling to JSON: %v", err)
+	}
+
 	return &DirectLink{
 		NanoId:  gonanoid.Must(8),
 		Clicks:  0,
 		Payload: payload,
 		Event:   event.GetType(),
-	}
-}
-
-func NewEmployeeInviteLink(event EmployeeInviteEvent) (*DirectLink, error) {
-	jsonData, err := json.Marshal(event)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling to JSON: %v", err)
-	}
-	return NewDirectLink(event, jsonData), nil
-}
-
-func NewClientInviteLink(event ClientInviteEvent) (*DirectLink, error) {
-	jsonData, err := json.Marshal(event)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling to JSON: %v", err)
-	}
-	return NewDirectLink(event, jsonData), nil
-}
-
-func NewSalonInviteLink(event SalonInviteEvent) (*DirectLink, error) {
-	jsonData, err := json.Marshal(event)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling to JSON: %v", err)
-	}
-	return NewDirectLink(event, jsonData), nil
+	}, nil
 }
 
 func (l *DirectLink) IncClicks() {
@@ -62,8 +44,6 @@ func (l *DirectLink) Validate() error {
 }
 
 func (l *DirectLink) GetEvent() (InviteEvent, error) {
-	fmt.Println(l.Event)
-
 	switch l.Event {
 	case EmployeeInvite:
 		var event EmployeeInviteEvent
@@ -72,7 +52,6 @@ func (l *DirectLink) GetEvent() (InviteEvent, error) {
 		}
 		event.BaseInviteEvent = BaseInviteEvent{Type: l.Event}
 		return &event, nil
-
 	case SalonInvite:
 		var event SalonInviteEvent
 		if err := json.Unmarshal(l.Payload, &event); err != nil {
@@ -80,7 +59,6 @@ func (l *DirectLink) GetEvent() (InviteEvent, error) {
 		}
 		event.BaseInviteEvent = BaseInviteEvent{Type: l.Event}
 		return &event, nil
-
 	case ClientInvite:
 		var event ClientInviteEvent
 		if err := json.Unmarshal(l.Payload, &event); err != nil {
@@ -88,7 +66,6 @@ func (l *DirectLink) GetEvent() (InviteEvent, error) {
 		}
 		event.BaseInviteEvent = BaseInviteEvent{Type: l.Event}
 		return &event, nil
-
 	default:
 		return nil, fmt.Errorf("unknown event: %s; id - %s", l.Event, l.NanoId)
 	}

@@ -31,7 +31,7 @@ func (f fingerprintRepo) Create(ctx *gin.Context, fp *domain.Fingerprint) error 
 }
 
 func (f fingerprintRepo) Find(ctx *gin.Context, fpFields *domain.FingerprintFields) (*domain.Fingerprint, error) {
-	var fp models.FingerprintDB
+	var fp models.Fingerprint
 	if err := f.db.Where("ip = ?", fpFields.IP).First(&fp).Error; err != nil {
 		return nil, fmt.Errorf("db find fingerprint: %w", err)
 	}

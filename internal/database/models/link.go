@@ -1,17 +1,16 @@
 package models
 
 import (
-	"gorm.io/gorm"
 	"redirectServer/internal/domain"
 )
 
-type DirectLinkDB struct {
-	gorm.Model
+type DirectLink struct {
+	BaseUUIDModel
 	*domain.DirectLink
 }
 
-func NewDirectLinkDB(link *domain.DirectLink) *DirectLinkDB {
-	return &DirectLinkDB{
+func NewDirectLinkDB(link *domain.DirectLink) *DirectLink {
+	return &DirectLink{
 		DirectLink: link,
 	}
 }

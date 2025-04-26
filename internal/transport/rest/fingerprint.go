@@ -12,8 +12,8 @@ import (
 )
 
 type FingerprintHandler interface {
-	Create(ctx *gin.Context)
-	Find(ctx *gin.Context)
+	Create(*gin.Context)
+	Find(*gin.Context)
 }
 
 type fingerprintHandler struct {

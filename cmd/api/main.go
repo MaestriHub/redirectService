@@ -31,7 +31,7 @@ func main() {
 
 	db := database.InitDB(cfg.DbConfig)
 
-	migrate := migrations.NewMigration_1(db)
+	migrate := migrations.NewMigration1(db)
 	if err := migrate.Up(); err != nil {
 		log.Fatal(err)
 	}
@@ -52,56 +52,21 @@ func main() {
 	fingerprintService := service.NewFingerprintService(fingerprintRepo, linkRepo)
 
 	// Handlers
-	linkHandler := rest.NewLinkHandler(linkService, renderService)
+	linkHandler := rest.NewLinkHandler(linkService)
 	mainScreenHandler := rest.NewMainScreenHandler(linkService, renderService)
 	fingerprintHandler := rest.NewFingerprintHandler(linkService, fingerprintService)
 
 	// Routes
-	setupLinkRoutes(server, linkHandler)
-	setupFingerprint(server, fingerprintHandler)
-	setupMainScreen(server, mainScreenHandler)
-
-	setupHealthRoutes(server)
-	setupStaticFiles(server)
-	setupSwagger(server)
-
-	server.Run()
-}
-
-func setupLinkRoutes(router *gin.Engine, h rest.LinkHandler) {
-	createLink := router.Group("link")
-	{
-		createLink.POST("/salon", h.CreateInviteSalon)
-		createLink.POST("/employee", h.CreateInviteEmployee)
-		createLink.POST("/client", h.CreateInviteClient)
-	}
-}
-
-func setupHealthRoutes(router *gin.Engine) {
-	router.GET("/health", func(c *gin.Context) {
+	rest.MapLinkRoutes(server, linkHandler)
+	rest.MapFPRoutes(server, fingerprintHandler)
+	rest.MapMainScreenRoutes(server, mainScreenHandler)
+	server.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "OK"})
 	})
-}
+	server.Static("/static", "./static")
+	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-// TODO: протестировать
-func setupStaticFiles(router *gin.Engine) {
-	router.Static("/static", "./static")
-}
-
-func setupMainScreen(router *gin.Engine, h rest.MainScreenHandler) {
-	router.GET("/:linkId", h.MainScreen)
-}
-
-func setupSwagger(router *gin.Engine) {
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-}
-
-func setupFingerprint(router *gin.Engine, h rest.FingerprintHandler) {
-	fp := router.Group("fingerprint")
-	{
-		fp.POST("/:linkId", h.Create)
-		fp.POST("/find/*linkId", h.Find)
-	}
+	server.Run()
 }
 
 func setupMiddlewares(router *gin.Engine) {

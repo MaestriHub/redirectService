@@ -5,20 +5,16 @@ import (
 )
 
 type Fingerprint struct {
-	Platform       string   `json:"platform"`
-	Version        string   `json:"version"`
-	Language       string   `json:"language"`
-	Languages      []string `json:"languages"`
-	Cores          *int     `json:"cores"`
-	Memory         *int     `json:"memory"`
-	ScreenWidth    int      `json:"screenWidth"`
-	ScreenHeight   int      `json:"screenHeight"`
-	ColorDepth     int      `json:"colorDepth"`
-	PixelRatio     float64  `json:"pixelRatio"`
-	ViewportWidth  int      `json:"viewportWidth"`
-	ViewportHeight int      `json:"viewportHeight"`
-	Renderer       string
-	VendorRender   *string
+	Language       string         `json:"language"`
+	Languages      []string       `json:"languages"`
+	Cores          *int           `json:"cores"`
+	Memory         *int           `json:"memory"`
+	ScreenWidth    int            `json:"screenWidth"`
+	ScreenHeight   int            `json:"screenHeight"`
+	ColorDepth     int            `json:"colorDepth"`
+	PixelRatio     float64        `json:"pixelRatio"`
+	ViewportWidth  int            `json:"viewportWidth"`
+	ViewportHeight int            `json:"viewportHeight"`
 	TimeZone       string         `json:"timeZone"`
 	LinkId         *domain.NanoID `json:"link_id"`
 }
@@ -34,8 +30,6 @@ func (p *Fingerprint) ToFields(ip string, ua domain.UserAgent) *domain.Fingerpri
 	return &domain.FingerprintFields{
 		IP:             ip,
 		UserAgent:      ua,
-		Platform:       p.Platform,
-		Version:        p.Version,
 		Language:       p.Language,
 		Languages:      p.Languages,
 		Cores:          p.Cores,
@@ -46,8 +40,6 @@ func (p *Fingerprint) ToFields(ip string, ua domain.UserAgent) *domain.Fingerpri
 		PixelRatio:     p.PixelRatio,
 		ViewportWidth:  p.ViewportWidth,
 		ViewportHeight: p.ViewportHeight,
-		Renderer:       p.Renderer,
-		VendorRender:   p.VendorRender,
 		TimeZone:       p.TimeZone,
 	}
 }

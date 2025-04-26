@@ -33,7 +33,7 @@ func (l linkRepo) Create(ctx *gin.Context, link *domain.DirectLink) error {
 
 func (l linkRepo) Update(ctx *gin.Context, link *domain.DirectLink) error {
 	if err := l.db.
-		Model(&models.DirectLinkDB{}).
+		Model(&models.DirectLink{}).
 		Where("nano_id = ?", link.NanoId).
 		Limit(1).
 		Order("create_at asc").
@@ -45,7 +45,7 @@ func (l linkRepo) Update(ctx *gin.Context, link *domain.DirectLink) error {
 }
 
 func (l linkRepo) Find(ctx *gin.Context, id domain.NanoID) (*domain.DirectLink, error) {
-	var link models.DirectLinkDB
+	var link models.DirectLink
 	if err := l.db.Where("nano_id = ?", id).First(&link).Error; err != nil {
 		return nil, fmt.Errorf("db find link: %w", err)
 	}

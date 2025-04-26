@@ -1,17 +1,16 @@
 package models
 
 import (
-	"gorm.io/gorm"
 	"redirectServer/internal/domain"
 )
 
-type FingerprintDB struct {
-	gorm.Model
+type Fingerprint struct {
+	BaseUUIDModel
 	*domain.Fingerprint
 }
 
-func NewFingerprintDB(fp *domain.Fingerprint) *FingerprintDB {
-	return &FingerprintDB{
+func NewFingerprintDB(fp *domain.Fingerprint) *Fingerprint {
+	return &Fingerprint{
 		Fingerprint: fp,
 	}
 }

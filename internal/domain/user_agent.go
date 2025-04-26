@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -16,7 +15,6 @@ const (
 
 // TODO: затянуть библиотеку по ua
 func ParseUserAgent(ua string) UserAgent {
-	fmt.Println(ua)
 	lowerUA := strings.ToLower(ua)
 	if strings.Contains(lowerUA, "iphone") || strings.Contains(lowerUA, "ipad") {
 		return IOS

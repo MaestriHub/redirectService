@@ -11,19 +11,17 @@ import (
 )
 
 type LinkHandler interface {
-	CreateInviteEmployee(ctx *gin.Context)
-	CreateInviteClient(ctx *gin.Context)
-	CreateInviteSalon(ctx *gin.Context)
+	CreateInviteEmployee(*gin.Context)
+	CreateInviteClient(*gin.Context)
+	CreateInviteSalon(*gin.Context)
 }
 
 type linkHandler struct {
-	linkService        service.LinkService
-	renderService      service.RenderService
-	fingerprintService service.FingerprintService
+	linkService service.LinkService
 }
 
-func NewLinkHandler(l service.LinkService, r service.RenderService) LinkHandler {
-	return &linkHandler{linkService: l, renderService: r}
+func NewLinkHandler(l service.LinkService) LinkHandler {
+	return &linkHandler{linkService: l}
 }
 
 // CreateInviteEmployee godoc
@@ -45,7 +43,7 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 	}
 
 	event := domain.NewEmployeeInviteEvent(emp.SalonId, emp.EmployeeId)
-	link, err := domain.NewEmployeeInviteLink(*event)
+	link, err := domain.NewDirectLink(*event)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 	}
@@ -78,7 +76,7 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 	}
 
 	event := domain.NewSalonInviteEvent(salon.SalonId)
-	link, err := domain.NewSalonInviteLink(*event)
+	link, err := domain.NewDirectLink(*event)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 	}
@@ -111,7 +109,7 @@ func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 	}
 
 	event := domain.NewClientInviteEvent(customer.ClientId, customer.EmployeeId)
-	link, err := domain.NewClientInviteLink(*event)
+	link, err := domain.NewDirectLink(*event)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 	}
