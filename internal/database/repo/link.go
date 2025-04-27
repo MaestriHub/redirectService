@@ -49,5 +49,10 @@ func (l linkRepo) Find(ctx *gin.Context, id domain.NanoID) (*domain.DirectLink, 
 	if err := l.db.Where("nano_id = ?", id).First(&link).Error; err != nil {
 		return nil, fmt.Errorf("db find link: %w", err)
 	}
+
+	if link.DirectLink == nil {
+		return nil, fmt.Errorf("link not found")
+	}
+
 	return link.DirectLink, nil
 }

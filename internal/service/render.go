@@ -10,10 +10,11 @@ import (
 	"redirectServer/configs"
 	"redirectServer/internal/database/repo"
 	"redirectServer/internal/domain"
+	"redirectServer/pkg"
 )
 
 type RenderService interface {
-	RenderMain(ctx *gin.Context, link *domain.DirectLink, ua domain.UserAgent) (string, error)
+	RenderMain(ctx *gin.Context, link *domain.DirectLink, ua domain.UserAgent) (string, *pkg.ErrorS)
 }
 
 type renderService struct {
@@ -36,17 +37,17 @@ const (
 	hLinkID               placeholder = "{{.LinkID}}"
 )
 
-func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua domain.UserAgent) (string, error) {
+func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua domain.UserAgent) (string, *pkg.ErrorS) {
 	event, err := link.GetEvent()
 	if err != nil {
-		return "", err
+		return "", pkg.NewNotFoundError(err.Error())
 	}
 
 	path := getHTMLPath(event, ua)
 
 	htmlFile, err := os.ReadFile(path)
 	if err != nil {
-		return "", fmt.Errorf("read file %s: %w", path, err)
+		return "", pkg.NewInternalServerError(fmt.Errorf("read file %s: %w", path, err).Error())
 	}
 
 	mHTML := string(htmlFile)

@@ -3,10 +3,8 @@ package migrations_test
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"redirectServer/internal/database/migrations"
@@ -15,10 +13,6 @@ import (
 
 // Helper function to setup a test database
 func setupTestDB() (*gorm.DB, error) {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		return nil, err
@@ -206,23 +200,21 @@ func TestMigration1_Up_Types(t *testing.T) {
 	})
 
 	assertTableAndColumns(t, db, "fingerprints", map[string]string{
-		"id":              "uuid",
-		"ip":              "TEXT",
-		"user_agent":      "TEXT",
-		"language":        "TEXT",
-		"languages":       "TEXT",
-		"cores":           "INTEGER",
-		"memory":          "INTEGER",
-		"screen_width":    "INTEGER",
-		"screen_height":   "INTEGER",
-		"color_depth":     "INTEGER",
-		"pixel_ratio":     "REAL",
-		"viewport_width":  "INTEGER",
-		"viewport_height": "INTEGER",
-		"time_zone":       "TEXT",
-		"link_id":         "TEXT",
-		"created_at":      "datetime",
-		"updated_at":      "datetime",
-		"deleted_at":      "datetime",
+		"id":            "uuid",
+		"ip":            "TEXT",
+		"user_agent":    "TEXT",
+		"language":      "TEXT",
+		"languages":     "TEXT",
+		"cores":         "INTEGER",
+		"memory":        "INTEGER",
+		"screen_width":  "INTEGER",
+		"screen_height": "INTEGER",
+		"color_depth":   "INTEGER",
+		"pixel_ratio":   "REAL",
+		"time_zone":     "TEXT",
+		"link_id":       "TEXT",
+		"created_at":    "datetime",
+		"updated_at":    "datetime",
+		"deleted_at":    "datetime",
 	})
 }

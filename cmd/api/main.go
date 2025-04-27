@@ -1,12 +1,19 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/swaggo/files"       // swagger embed files
-	"github.com/swaggo/gin-swagger" // gin-swagger middleware
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"redirectServer/configs"
 	_ "redirectServer/docs"
 	"redirectServer/internal/database"
@@ -36,9 +43,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := gin.New()
+	app := gin.New()
 
-	setupMiddlewares(server)
+	setupMiddlewares(app)
 
 	// Repositories
 	linkRepo := repository.NewLinkRepo(db)
@@ -57,20 +64,53 @@ func main() {
 	fingerprintHandler := rest.NewFingerprintHandler(linkService, fingerprintService)
 
 	// Routes
-	rest.MapLinkRoutes(server, linkHandler)
-	rest.MapFPRoutes(server, fingerprintHandler)
-	rest.MapMainScreenRoutes(server, mainScreenHandler)
-	server.GET("/health", func(c *gin.Context) {
+	rest.MapLinkRoutes(app, linkHandler)
+	rest.MapFPRoutes(app, fingerprintHandler)
+	rest.MapMainScreenRoutes(app, mainScreenHandler)
+	app.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "OK"})
 	})
-	server.Static("/static", "./static")
-	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	app.Static("/static", "./static")
+	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	server.Run()
+	address := "0.0.0.0:8080"
+
+	bootWithGracefulShutdown(app, address, 5*time.Second)
 }
 
 func setupMiddlewares(router *gin.Engine) {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(middlewares.CORS())
+	router.Use(middlewares.ErrorHandlerMiddleware())
+}
+
+func bootWithGracefulShutdown(app *gin.Engine, address string, shutdownTimeoutS time.Duration) {
+	srv := &http.Server{
+		Addr:    address,
+		Handler: app.Handler(),
+	}
+
+	log.Println("Listening on " + address)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeoutS)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Println("Server Shutdown:", err)
+	}
+
+	<-ctx.Done()
+	log.Printf("timeout of %s seconds.", shutdownTimeoutS)
+	log.Println("Server exiting")
 }

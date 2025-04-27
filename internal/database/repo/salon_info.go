@@ -29,5 +29,10 @@ func (s *salonInfoRepo) GetInfo(ctx *gin.Context, salonId uuid.UUID) (*domain.Sa
 		First(&salon).Error; err != nil {
 		return nil, fmt.Errorf("SalonInfoRepo.GetInfo: %w", err)
 	}
+
+	if salon.ID == uuid.Nil {
+		return nil, fmt.Errorf("SalonInfoRepo.GetInfo: Employee not found")
+	}
+
 	return &salon, nil
 }

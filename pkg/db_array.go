@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 type StringArray []string
@@ -26,5 +25,12 @@ func (s *StringArray) Scan(value interface{}) error {
 }
 
 func (s StringArray) Value() (driver.Value, error) {
-	return "{" + strings.Join(s, ",") + "}", nil
+	if len(s) == 0 {
+		return "[]", nil
+	}
+	jsonBytes, err := json.Marshal(s)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal string array: %w", err)
+	}
+	return string(jsonBytes), nil
 }

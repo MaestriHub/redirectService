@@ -5,7 +5,7 @@ import (
 )
 
 func MapLinkRoutes(e *gin.Engine, h LinkHandler) {
-	createLink := e.Group("link")
+	createLink := e.Group("/link")
 	{
 		createLink.POST("/salon", h.CreateInviteSalon)
 		createLink.POST("/employee", h.CreateInviteEmployee)
@@ -14,10 +14,12 @@ func MapLinkRoutes(e *gin.Engine, h LinkHandler) {
 }
 
 func MapFPRoutes(e *gin.Engine, h FingerprintHandler) {
-	fp := e.Group("fingerprint")
+	fp := e.Group("/fingerprint")
 	{
 		fp.POST("/:linkId", h.Create)
-		fp.POST("/find/*linkId", h.Find)
+		// MARK: Gin not support optional params
+		fp.POST("/find/:linkId", h.Find)
+		fp.POST("/find", h.Find)
 	}
 }
 

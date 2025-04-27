@@ -5,7 +5,7 @@ import (
 )
 
 type CreateEmployeeInviteLink struct {
-	EmployeeId uuid.UUID `json:"id"`
+	EmployeeId uuid.UUID `json:"employeeId"`
 	SalonId    uuid.UUID `json:"salonId"`
 }
 

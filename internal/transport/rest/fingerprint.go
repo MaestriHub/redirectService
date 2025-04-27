@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"redirectServer/internal/domain"
 	"redirectServer/internal/service"
 	"redirectServer/internal/transport/dto/params"
@@ -40,21 +41,21 @@ func NewFingerprintHandler(l service.LinkService, f service.FingerprintService) 
 //	@Router			/fingerprint/{linkId} [post]
 func (h *fingerprintHandler) Create(ctx *gin.Context) {
 	fpDTO := params.Fingerprint{}
-	if err := ctx.ShouldBindBodyWithJSON(&fpDTO); err != nil {
+	if err := ctx.ShouldBindWith(&fpDTO, binding.JSON); err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 		return
 	}
 	ua := ctx.GetHeader(pkg.UserAgent)
 
-	linkId, exists := ctx.Params.Get("linkId")
-	if !exists {
+	linkId, ok := ctx.Params.Get("linkId")
+	if !ok {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO("linkId is required"))
 		return
 	}
 
 	fp := fpDTO.ToDomain(ctx.ClientIP(), domain.ParseUserAgent(ua), linkId)
 	if err := h.fingerprintService.Create(ctx, fp); err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error()))
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 
@@ -75,16 +76,17 @@ func (h *fingerprintHandler) Create(ctx *gin.Context) {
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/fingerprint/find/{linkId} [post]
 func (h *fingerprintHandler) Find(ctx *gin.Context) {
-	fpDTO := params.Fingerprint{}
-	if err := ctx.ShouldBindBodyWithJSON(&fpDTO); err != nil {
-		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
-		return
-	}
-
-	if linkId, exists := ctx.Params.Get("linkId"); exists {
+	if linkId, ok := ctx.Params.Get("linkId"); ok {
 		if link, err := h.linkService.Find(ctx, linkId); err == nil {
 			ctx.JSON(http.StatusOK, link)
+			return
 		}
+	}
+
+	fpDTO := params.Fingerprint{}
+	if err := ctx.ShouldBindWith(&fpDTO, binding.JSON); err != nil {
+		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
+		return
 	}
 
 	ua := ctx.GetHeader(pkg.UserAgent)
@@ -92,7 +94,7 @@ func (h *fingerprintHandler) Find(ctx *gin.Context) {
 
 	link, err := h.fingerprintService.Find(ctx, fpFields)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error()))
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 

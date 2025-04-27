@@ -36,15 +36,15 @@ func NewMainScreenHandler(l service.LinkService, r service.RenderService) MainSc
 //	@Failure		500			{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/{linkId} [get]
 func (h *mainScreenHandler) MainScreen(ctx *gin.Context) {
-	linkId, exists := ctx.Params.Get("linkId")
-	if !exists {
+	linkId, ok := ctx.Params.Get("linkId")
+	if !ok {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO("linkId is required"))
 		return
 	}
 
 	link, err := h.linkService.LinkTap(ctx, linkId)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, resp.NewErrorDTO(err.Error()))
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 
@@ -52,7 +52,7 @@ func (h *mainScreenHandler) MainScreen(ctx *gin.Context) {
 
 	html, err := h.renderService.RenderMain(ctx, link, ua)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error()))
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 

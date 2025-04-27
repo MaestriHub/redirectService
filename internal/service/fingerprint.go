@@ -1,16 +1,15 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	repo "redirectServer/internal/database/repo"
 	"redirectServer/internal/domain"
+	"redirectServer/pkg"
 )
 
 type FingerprintService interface {
-	Create(ctx *gin.Context, fp *domain.Fingerprint) error
-	Find(ctx *gin.Context, fp *domain.FingerprintFields) (*domain.DirectLink, error)
+	Create(ctx *gin.Context, fp *domain.Fingerprint) *pkg.ErrorS
+	Find(ctx *gin.Context, fp *domain.FingerprintFields) (*domain.DirectLink, *pkg.ErrorS)
 }
 
 type fingerprintService struct {
@@ -22,27 +21,27 @@ func NewFingerprintService(fp repo.FingerprintRepo, l repo.LinkRepo) Fingerprint
 	return &fingerprintService{repoFp: fp, repoLink: l}
 }
 
-func (f fingerprintService) Create(ctx *gin.Context, fp *domain.Fingerprint) error {
+func (f fingerprintService) Create(ctx *gin.Context, fp *domain.Fingerprint) *pkg.ErrorS {
 	if err := fp.Validate(); err != nil {
-		return fmt.Errorf("validate fingerprint: %w", err)
+		return pkg.NewBadRequestError(err.Error())
 	}
 
 	if err := f.repoFp.Create(ctx, fp); err != nil {
-		return fmt.Errorf("create fingerprint: %w", err)
+		return pkg.NewInternalServerError(err.Error())
 	}
 
 	return nil
 }
 
-func (f fingerprintService) Find(ctx *gin.Context, fpFields *domain.FingerprintFields) (*domain.DirectLink, error) {
+func (f fingerprintService) Find(ctx *gin.Context, fpFields *domain.FingerprintFields) (*domain.DirectLink, *pkg.ErrorS) {
 	matchedFp, err := f.repoFp.Find(ctx, fpFields)
 	if err != nil {
-		return nil, fmt.Errorf("find fingerprint: %w", err)
+		return nil, pkg.NewNotFoundError(err.Error())
 	}
 
 	link, err := f.repoLink.Find(ctx, matchedFp.LinkId)
 	if err != nil {
-		return nil, fmt.Errorf("find link: %w", err)
+		return nil, pkg.NewNotFoundError(err.Error())
 	}
 
 	return link, nil

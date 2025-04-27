@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"redirectServer/internal/domain"
 	"redirectServer/internal/service"
 	"redirectServer/internal/transport/dto/params"
@@ -37,7 +38,7 @@ func NewLinkHandler(l service.LinkService) LinkHandler {
 //	@Router			/link/employee [post]
 func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 	emp := params.CreateEmployeeInviteLink{}
-	if err := ctx.ShouldBindBodyWithJSON(&emp); err != nil {
+	if err := ctx.ShouldBindWith(&emp, binding.JSON); err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 		return
 	}
@@ -49,7 +50,7 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 	}
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error())) // TODO:
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 
@@ -70,7 +71,7 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 //	@Router			/link/salon [post]
 func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 	salon := params.CreateSalonInviteLink{}
-	if err := ctx.ShouldBindBodyWithJSON(&salon); err != nil {
+	if err := ctx.ShouldBindWith(&salon, binding.JSON); err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 		return
 	}
@@ -82,7 +83,7 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 	}
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error())) // TODO:
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 
@@ -103,7 +104,7 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 //	@Router			/link/client [post]
 func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 	customer := params.CreateClientInviteLink{}
-	if err := ctx.ShouldBindBodyWithJSON(&customer); err != nil {
+	if err := ctx.ShouldBindWith(&customer, binding.JSON); err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 		return
 	}
@@ -115,7 +116,7 @@ func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 	}
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
-		ctx.JSON(http.StatusInternalServerError, resp.NewErrorDTO(err.Error())) // TODO:
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
 		return
 	}
 
