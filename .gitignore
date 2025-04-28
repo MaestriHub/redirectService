@@ -1,3 +1,6 @@
 go.sum
 .env
 .vscode
+.idea
+go.sum
+go.mod
