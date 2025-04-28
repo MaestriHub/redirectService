@@ -1,0 +1,286 @@
+basePath: /
+definitions:
+  domain.DirectLink:
+    properties:
+      clicks:
+        type: integer
+      event:
+        type: string
+      nanoId:
+        type: string
+      payload:
+        items:
+          type: integer
+        type: array
+    type: object
+  params.CreateClientInviteLink:
+    properties:
+      clientId:
+        type: string
+      employeeId:
+        type: string
+    type: object
+  params.CreateEmployeeInviteLink:
+    properties:
+      id:
+        type: string
+      salonId:
+        type: string
+    type: object
+  params.CreateSalonInviteLink:
+    properties:
+      salonId:
+        type: string
+    type: object
+  params.Fingerprint:
+    properties:
+      colorDepth:
+        type: integer
+      cores:
+        type: integer
+      language:
+        type: string
+      languages:
+        items:
+          type: string
+        type: array
+      link_id:
+        type: string
+      memory:
+        type: integer
+      pixelRatio:
+        type: number
+      platform:
+        type: string
+      renderer:
+        type: string
+      screenHeight:
+        type: integer
+      screenWidth:
+        type: integer
+      timeZone:
+        type: string
+      vendorRender:
+        type: string
+      version:
+        type: string
+      viewportHeight:
+        type: integer
+      viewportWidth:
+        type: integer
+    type: object
+  resp.ErrorDTO:
+    properties:
+      error:
+        example: Описание ошибки
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for generating links and catch fingerprints.
+  title: Invite API
+  version: "1.0"
+paths:
+  /{linkId}:
+    get:
+      consumes:
+      - application/json
+      description: web window with button on application
+      parameters:
+      - description: 'Юзер агент пользователя. ex: Android'
+        in: header
+        name: User-Agent
+        required: true
+        type: string
+      - description: Идентификатор (NanoID)
+        in: path
+        name: linkId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Main web window
+      tags:
+      - html
+  /fingerprint/{linkId}:
+    post:
+      consumes:
+      - application/json
+      description: Uses for define who go to app with link
+      parameters:
+      - description: 'Юзер агент пользователя. ex: Android'
+        in: header
+        name: User-Agent
+        required: true
+        type: string
+      - description: Идентификатор (NanoID)
+        in: path
+        name: linkId
+        required: true
+        type: string
+      - description: Данные об устройстве
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/params.Fingerprint'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Create device fingerprint
+      tags:
+      - fingerprint
+  /fingerprint/find/{linkId}:
+    post:
+      consumes:
+      - application/json
+      description: we want to associate direct link with new user in app by fingerprint
+      parameters:
+      - description: 'Юзер агент пользователя. ex: Android'
+        in: header
+        name: User-Agent
+        required: true
+        type: string
+      - description: Идентификатор (NanoID)
+        in: path
+        name: linkId
+        type: string
+      - description: Данные об устройстве
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/params.Fingerprint'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.DirectLink'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Find device by fingerprint
+      tags:
+      - fingerprint
+  /link/client:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new invite link for client
+      parameters:
+      - description: Данные клиента
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/params.CreateClientInviteLink'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.DirectLink'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Create to client invite
+      tags:
+      - link
+  /link/employee:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new invite link for an employee
+      parameters:
+      - description: Данные сотрудника
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/params.CreateEmployeeInviteLink'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.DirectLink'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Create an employee invite
+      tags:
+      - link
+  /link/salon:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new invite link for salon
+      parameters:
+      - description: Данные салона
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/params.CreateSalonInviteLink'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.DirectLink'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/resp.ErrorDTO'
+      summary: Create to salon invite
+      tags:
+      - link
+swagger: "2.0"
