@@ -71,7 +71,7 @@ func (h *fingerprintHandler) Create(ctx *gin.Context) {
 //	@Param			User-Agent	header		string	true	"Юзер агент пользователя. ex: Android"
 //	@Param			linkId		path		string	false	"Идентификатор (NanoID)"
 //	@Param			request	body		params.Fingerprint	true	"Данные об устройстве"
-//	@Success		200		{object}	domain.DirectLink
+//	@Success		200		{object}	resp.DirectLinkDTO
 //	@Failure		400		{object}	resp.ErrorDTO	"Bad request"
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/fingerprint/find/{linkId} [post]
@@ -98,5 +98,9 @@ func (h *fingerprintHandler) Find(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, link)
+	dto, parsed := resp.NewDirectLinkDTO(*link)
+	if parsed != nil {
+		ctx.JSON(err.Status, resp.NewErrorDTO(err.Error()))
+	}
+	ctx.JSON(http.StatusOK, dto)
 }

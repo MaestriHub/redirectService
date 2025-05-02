@@ -1,18 +1,5 @@
 basePath: /
 definitions:
-  domain.DirectLink:
-    properties:
-      clicks:
-        type: integer
-      event:
-        type: string
-      nanoId:
-        type: string
-      payload:
-        items:
-          type: integer
-        type: array
-    type: object
   params.CreateClientInviteLink:
     properties:
       clientId:
@@ -22,7 +9,7 @@ definitions:
     type: object
   params.CreateEmployeeInviteLink:
     properties:
-      id:
+      employeeId:
         type: string
       salonId:
         type: string
@@ -44,30 +31,27 @@ definitions:
         items:
           type: string
         type: array
-      link_id:
-        type: string
       memory:
         type: integer
       pixelRatio:
         type: number
-      platform:
-        type: string
-      renderer:
-        type: string
       screenHeight:
         type: integer
       screenWidth:
         type: integer
       timeZone:
         type: string
-      vendorRender:
+    type: object
+  resp.DirectLinkDTO:
+    properties:
+      event:
         type: string
-      version:
+      nanoId:
         type: string
-      viewportHeight:
-        type: integer
-      viewportWidth:
-        type: integer
+      payload:
+        additionalProperties:
+          type: string
+        type: object
     type: object
   resp.ErrorDTO:
     properties:
@@ -181,7 +165,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/domain.DirectLink'
+            $ref: '#/definitions/resp.DirectLinkDTO'
         "400":
           description: Bad request
           schema:
@@ -211,7 +195,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/domain.DirectLink'
+            $ref: '#/definitions/resp.DirectLinkDTO'
         "400":
           description: Bad request
           schema:
@@ -241,7 +225,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/domain.DirectLink'
+            $ref: '#/definitions/resp.DirectLinkDTO'
         "400":
           description: Bad request
           schema:
@@ -271,7 +255,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/domain.DirectLink'
+            $ref: '#/definitions/resp.DirectLinkDTO'
         "400":
           description: Bad request
           schema:

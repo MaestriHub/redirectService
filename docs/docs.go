@@ -56,7 +56,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/domain.DirectLink"
+                            "$ref": "#/definitions/resp.DirectLinkDTO"
                         }
                     },
                     "400": {
@@ -159,7 +159,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/domain.DirectLink"
+                            "$ref": "#/definitions/resp.DirectLinkDTO"
                         }
                     },
                     "400": {
@@ -205,7 +205,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/domain.DirectLink"
+                            "$ref": "#/definitions/resp.DirectLinkDTO"
                         }
                     },
                     "400": {
@@ -251,7 +251,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/domain.DirectLink"
+                            "$ref": "#/definitions/resp.DirectLinkDTO"
                         }
                     },
                     "400": {
@@ -322,26 +322,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.DirectLink": {
-            "type": "object",
-            "properties": {
-                "clicks": {
-                    "type": "integer"
-                },
-                "event": {
-                    "type": "string"
-                },
-                "nanoId": {
-                    "type": "string"
-                },
-                "payload": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
         "params.CreateClientInviteLink": {
             "type": "object",
             "properties": {
@@ -356,7 +336,7 @@ const docTemplate = `{
         "params.CreateEmployeeInviteLink": {
             "type": "object",
             "properties": {
-                "id": {
+                "employeeId": {
                     "type": "string"
                 },
                 "salonId": {
@@ -390,20 +370,11 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "link_id": {
-                    "type": "string"
-                },
                 "memory": {
                     "type": "integer"
                 },
                 "pixelRatio": {
                     "type": "number"
-                },
-                "platform": {
-                    "type": "string"
-                },
-                "renderer": {
-                    "type": "string"
                 },
                 "screenHeight": {
                     "type": "integer"
@@ -413,18 +384,23 @@ const docTemplate = `{
                 },
                 "timeZone": {
                     "type": "string"
-                },
-                "vendorRender": {
+                }
+            }
+        },
+        "resp.DirectLinkDTO": {
+            "type": "object",
+            "properties": {
+                "event": {
                     "type": "string"
                 },
-                "version": {
+                "nanoId": {
                     "type": "string"
                 },
-                "viewportHeight": {
-                    "type": "integer"
-                },
-                "viewportWidth": {
-                    "type": "integer"
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },

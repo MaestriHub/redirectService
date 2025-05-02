@@ -32,7 +32,7 @@ func NewLinkHandler(l service.LinkService) LinkHandler {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		params.CreateEmployeeInviteLink	true	"Данные сотрудника"
-//	@Success		201		{object}	domain.DirectLink
+//	@Success		201		{object}	resp.DirectLinkDTO
 //	@Failure		400		{object}	resp.ErrorDTO	"Bad request"
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/link/employee [post]
@@ -54,8 +54,11 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: convert to dto
-	ctx.JSON(http.StatusCreated, link)
+	dto, parsed := resp.NewDirectLinkDTO(*link)
+	if parsed != nil {
+		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(parsed.Error()))
+	}
+	ctx.JSON(http.StatusCreated, dto)
 }
 
 // CreateInviteSalon godoc
@@ -65,7 +68,7 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		params.CreateSalonInviteLink	true	"Данные салона"
-//	@Success		201		{object}	domain.DirectLink
+//	@Success		201		{object}	resp.DirectLinkDTO
 //	@Failure		400		{object}	resp.ErrorDTO	"Bad request"
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/link/salon [post]
@@ -87,8 +90,11 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: convert to dto
-	ctx.JSON(http.StatusCreated, link)
+	dto, parsed := resp.NewDirectLinkDTO(*link)
+	if parsed != nil {
+		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(parsed.Error()))
+	}
+	ctx.JSON(http.StatusCreated, dto)
 }
 
 // CreateInviteClient godoc
@@ -98,7 +104,7 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		params.CreateClientInviteLink	true	"Данные клиента"
-//	@Success		201		{object}	domain.DirectLink
+//	@Success		201		{object}	resp.DirectLinkDTO
 //	@Failure		400		{object}	resp.ErrorDTO	"Bad request"
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/link/client [post]
@@ -120,6 +126,9 @@ func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: convert to dto
-	ctx.JSON(http.StatusCreated, link)
+	dto, parsed := resp.NewDirectLinkDTO(*link)
+	if parsed != nil {
+		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(parsed.Error()))
+	}
+	ctx.JSON(http.StatusCreated, dto)
 }
