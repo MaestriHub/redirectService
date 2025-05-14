@@ -2,9 +2,10 @@ package resp
 
 import (
 	"encoding/json"
-	"fmt"
+	"net/http"
 
 	"redirectServer/internal/domain"
+	"redirectServer/pkg"
 )
 
 type DirectLinkDTO struct {
@@ -13,10 +14,10 @@ type DirectLinkDTO struct {
 	Event   string            `json:"event"`
 }
 
-func NewDirectLinkDTO(link domain.DirectLink) (*DirectLinkDTO, error) {
+func NewDirectLinkDTO(link domain.DirectLink) (*DirectLinkDTO, *pkg.ErrorS) {
 	var rawPayload map[string]string
 	if err := json.Unmarshal(link.Payload, &rawPayload); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal payload: %w", err)
+		return nil, pkg.NewErrorS("Ooops", http.StatusInternalServerError)
 	}
 
 	return &DirectLinkDTO{
