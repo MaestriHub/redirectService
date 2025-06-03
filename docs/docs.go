@@ -15,6 +15,57 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "web window with button on application",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "html"
+                ],
+                "summary": "Main web window",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Юзер агент пользователя. ex: Android",
+                        "name": "User-Agent",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор (NanoID)",
+                        "name": "linkId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/resp.ErrorDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.ErrorDTO"
+                        }
+                    }
+                }
+            }
+        },
         "/fingerprint/find/{linkId}": {
             "post": {
                 "description": "we want to associate direct link with new user in app by fingerprint",
@@ -252,57 +303,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/resp.DirectLinkDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/resp.ErrorDTO"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/resp.ErrorDTO"
-                        }
-                    }
-                }
-            }
-        },
-        "/{linkId}": {
-            "get": {
-                "description": "web window with button on application",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "html"
-                ],
-                "summary": "Main web window",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Юзер агент пользователя. ex: Android",
-                        "name": "User-Agent",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Идентификатор (NanoID)",
-                        "name": "linkId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
                         }
                     },
                     "400": {

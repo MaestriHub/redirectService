@@ -10,10 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	redirectService "redirectServer"
 	"redirectServer/configs"
 	_ "redirectServer/docs"
 	"redirectServer/internal/database"
@@ -70,7 +72,9 @@ func main() {
 	app.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "OK"})
 	})
-	app.Static("/static", "./static")
+
+	redirectService.EmbedStatic(app)
+
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	address := "0.0.0.0:8080"

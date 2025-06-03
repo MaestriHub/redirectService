@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.maetry.app",
+      "sha256_cert_fingerprints":
+      ["EE:E8:A8:DF:F9:1E:BB:BC:04:6D:4A:C0:31:CA:A9:15:F6:0D:DD:DF:01:0D:02:63:3A:D7:B1:67:D5:A2:E0:2A"]
+    }
+  }
+]
