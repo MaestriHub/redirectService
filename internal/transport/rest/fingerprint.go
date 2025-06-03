@@ -76,31 +76,40 @@ func (h *fingerprintHandler) Create(ctx *gin.Context) {
 //	@Failure		500		{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/fingerprint/find/{linkId} [post]
 func (h *fingerprintHandler) Find(ctx *gin.Context) {
+	var link *domain.DirectLink
+	var domainErr *pkg.ErrorS
 	if linkId, ok := ctx.Params.Get("linkId"); ok {
-		if link, err := h.linkService.Find(ctx, linkId); err == nil {
-			ctx.JSON(http.StatusOK, link)
-			return
-		}
+		link, domainErr = h.FindByLink(ctx, linkId)
+	} else {
+		link, domainErr = h.FindByFP(ctx)
 	}
 
+	if domainErr != nil {
+		ctx.JSON(domainErr.Status, resp.NewErrorDTO(domainErr.Error()))
+		return
+	}
+
+	dto, parsed := resp.NewDirectLinkDTO(*link)
+	if parsed != nil {
+		ctx.JSON(parsed.Status, resp.NewErrorDTO(parsed.Error()))
+	}
+	ctx.JSON(http.StatusOK, dto)
+}
+
+func (h *fingerprintHandler) FindByLink(ctx *gin.Context, linkId domain.NanoID) (*domain.DirectLink, *pkg.ErrorS) {
+	link, err := h.linkService.Find(ctx, linkId)
+	return link, err
+}
+
+func (h *fingerprintHandler) FindByFP(ctx *gin.Context) (*domain.DirectLink, *pkg.ErrorS) {
 	fpDTO := params.Fingerprint{}
 	if err := ctx.ShouldBindWith(&fpDTO, binding.JSON); err != nil {
-		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
-		return
+		return nil, pkg.NewBadRequestError("bad DTO")
 	}
 
 	ua := ctx.GetHeader(pkg.UserAgent)
 	fpFields := fpDTO.ToFields(ctx.ClientIP(), domain.ParseUserAgent(ua))
 
 	link, err := h.fingerprintService.Find(ctx, fpFields)
-	if err != nil {
-		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
-		return
-	}
-
-	dto, parsed := resp.NewDirectLinkDTO(*link)
-	if parsed != nil {
-		ctx.JSON(err.Status, resp.NewErrorDTO(err.Error()))
-	}
-	ctx.JSON(http.StatusOK, dto)
+	return link, err
 }
