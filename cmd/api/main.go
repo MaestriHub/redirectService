@@ -15,7 +15,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	redirectService "redirectServer"
 	"redirectServer/configs"
 	_ "redirectServer/docs"
 	"redirectServer/internal/database"
@@ -73,7 +72,15 @@ func main() {
 		c.JSON(200, gin.H{"status": "OK"})
 	})
 
-	redirectService.EmbedStatic(app)
+	app.GET("/apple-app-site-association", func(c *gin.Context) {
+		c.File("static/apple-app-site-association")
+	})
+
+	app.GET("/assetlinks.json", func(c *gin.Context) {
+		c.File("static/assetlinks.json")
+	})
+
+	app.Static("/static", "./static")
 
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
