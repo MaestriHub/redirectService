@@ -24,12 +24,23 @@ async function getPCData() {
     await getPCData();
 
     document.getElementById("copyButton").addEventListener("click", () => {
+        const tempTextArea = document.createElement("textarea");
+        tempTextArea.value = universalLink;
+        tempTextArea.style.position = "absolute";
+        tempTextArea.style.left = "-9999px";
+        document.body.appendChild(tempTextArea);
+
+        tempTextArea.select();
+        tempTextArea.setSelectionRange(0, 99999);
+
         try {
-            await navigator.clipboard.writeText(universalLink);
-            console.log("Текст успешно скопирован в буфер обмена:", universalLink);
-            window.location.href = appStoreLink;
+            document.execCommand("copy");
         } catch (error) {
             console.error("Ошибка при копировании:", error);
+        } finally {
+            document.body.removeChild(tempTextArea);
         }
+
+        window.location.href = appStoreLink;
     });
 })();
