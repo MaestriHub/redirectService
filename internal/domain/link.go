@@ -12,12 +12,12 @@ type DirectLink struct {
 	Event  Event
 }
 
-func NewDirectLink(event Event) (*DirectLink, error) {
+func NewDirectLink(event Event) *DirectLink {
 	return &DirectLink{
 		NanoId: gonanoid.Must(8),
 		Clicks: 0,
 		Event:  event,
-	}, nil
+	}
 }
 
 func (l *DirectLink) IncClicks() {
