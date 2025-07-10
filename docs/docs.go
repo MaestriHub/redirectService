@@ -325,7 +325,7 @@ const docTemplate = `{
         "params.CreateClientInviteLink": {
             "type": "object",
             "properties": {
-                "employeeId": {
+                "clientId": {
                     "type": "string"
                 },
                 "salonId": {

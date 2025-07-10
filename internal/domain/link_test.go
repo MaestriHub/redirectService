@@ -14,10 +14,7 @@ func TestNewDirectLink(t *testing.T) {
 	event := NewSalonInviteEvent(salonId)
 
 	// Act
-	link, err := NewDirectLink(event)
-	if err != nil {
-		t.Fatalf("Failed to create DirectLink: %v", err)
-	}
+	link := NewDirectLink(event)
 
 	// Assert
 	assert.NotNil(t, link)
@@ -68,16 +65,12 @@ func TestDirectLink_GetEvent_ValidEvent(t *testing.T) {
 	// Arrange
 	salonId := uuid.New()
 	event := NewSalonInviteEvent(salonId)
-	link, err := NewDirectLink(event)
-	if err != nil {
-		t.Fatalf("Failed to create DirectLink: %v", err)
-	}
+	link := NewDirectLink(event)
 
 	// Act
 	retrievedEvent := link.Event
 
 	// Assert
-	assert.NoError(t, err, "GetEvent should not return an error for valid events")
 	assert.NotNil(t, retrievedEvent, "Retrieved event should not be nil")
 
 	salonEvent, ok := retrievedEvent.(*SalonInviteEvent)

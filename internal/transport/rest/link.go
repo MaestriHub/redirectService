@@ -44,10 +44,7 @@ func (h *linkHandler) CreateInviteEmployee(ctx *gin.Context) {
 	}
 
 	event := domain.NewEmployeeInviteEvent(emp.SalonId, emp.EmployeeId)
-	link, err := domain.NewDirectLink(*event)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
-	}
+	link := domain.NewDirectLink(*event)
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
 		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
@@ -80,10 +77,7 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 	}
 
 	event := domain.NewSalonInviteEvent(salon.SalonId)
-	link, err := domain.NewDirectLink(*event)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
-	}
+	link := domain.NewDirectLink(*event)
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
 		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
@@ -115,11 +109,8 @@ func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 		return
 	}
 
-	event := domain.NewClientInviteEvent(customer.SalonId, customer.EmployeeId)
-	link, err := domain.NewDirectLink(*event)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
-	}
+	event := domain.NewClientInviteEvent(customer.ClientId, customer.SalonId)
+	link := domain.NewDirectLink(*event)
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
 		ctx.JSON(err.Status, resp.NewErrorDTO(err.Message))
