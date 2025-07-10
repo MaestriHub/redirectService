@@ -24,7 +24,11 @@ func NewLinkRepo(db *gorm.DB) LinkRepo {
 }
 
 func (l linkRepo) Create(ctx *gin.Context, link *domain.DirectLink) error {
-	dbLink := models.NewDirectLinkDB(link)
+	dbLink, err := models.NewDirectLinkDB(link)
+	if err != nil {
+		return err
+	}
+
 	if err := l.db.Create(&dbLink).Error; err != nil {
 		return fmt.Errorf("db create link: %w", err)
 	}
@@ -50,9 +54,16 @@ func (l linkRepo) Find(ctx *gin.Context, id domain.NanoID) (*domain.DirectLink, 
 		return nil, fmt.Errorf("db find link: %w", err)
 	}
 
-	if link.DirectLink == nil {
-		return nil, fmt.Errorf("link not found")
+	event, err := domain.NewEvent(link.Event, link.Payload)
+	if err != nil {
+		return nil, fmt.Errorf("db create event: %w", err)
 	}
 
-	return link.DirectLink, nil
+	domainLink := &domain.DirectLink{
+		NanoId: link.NanoId,
+		Clicks: link.Clicks,
+		Event:  event,
+	}
+
+	return domainLink, nil
 }

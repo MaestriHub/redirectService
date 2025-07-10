@@ -15,5 +15,5 @@ type CreateSalonInviteLink struct {
 
 type CreateClientInviteLink struct {
 	EmployeeId uuid.UUID `json:"employeeId"`
-	ClientId   uuid.UUID `json:"clientId"`
+	SalonId    uuid.UUID `json:"salonId"`
 }

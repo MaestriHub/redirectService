@@ -110,12 +110,12 @@ func (h *linkHandler) CreateInviteSalon(ctx *gin.Context) {
 //	@Router			/link/client [post]
 func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 	customer := params.CreateClientInviteLink{}
-	if err := ctx.ShouldBindWith(&customer, binding.JSON); err != nil {
+	if err := ctx.ShouldBindBodyWithJSON(&customer); err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))
 		return
 	}
 
-	event := domain.NewClientInviteEvent(customer.ClientId, customer.EmployeeId)
+	event := domain.NewClientInviteEvent(customer.SalonId, customer.EmployeeId)
 	link, err := domain.NewDirectLink(*event)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO(err.Error()))

@@ -40,7 +40,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор (NanoID)",
                         "name": "linkId",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -325,10 +325,10 @@ const docTemplate = `{
         "params.CreateClientInviteLink": {
             "type": "object",
             "properties": {
-                "clientId": {
+                "employeeId": {
                     "type": "string"
                 },
-                "employeeId": {
+                "salonId": {
                     "type": "string"
                 }
             }

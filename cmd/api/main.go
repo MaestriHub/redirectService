@@ -51,12 +51,11 @@ func main() {
 	// Repositories
 	linkRepo := repository.NewLinkRepo(db)
 	salonInfoRepo := repository.NewSalonInfoRepo(db)
-	empInfoRepo := repository.NewEmployeeInfoRepo(db)
 	fingerprintRepo := repository.NewFingerprintRepo(db)
 
 	// Services
 	linkService := service.NewLinkService(linkRepo)
-	renderService := service.NewRenderService(cfg.AppStoreLinksConfig, salonInfoRepo, empInfoRepo)
+	renderService := service.NewRenderService(cfg.AppStoreLinksConfig, salonInfoRepo)
 	fingerprintService := service.NewFingerprintService(fingerprintRepo, linkRepo)
 
 	// Handlers

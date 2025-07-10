@@ -7,16 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBaseInviteEvent_GetType(t *testing.T) {
-	event := BaseInviteEvent{
-		Type: EmployeeInvite,
-	}
-
-	eventType := event.GetType()
-
-	assert.Equal(t, EmployeeInvite, eventType)
-}
-
 func TestNewEmployeeInviteEvent(t *testing.T) {
 	salonId := uuid.New()
 	employeeId := uuid.New()
@@ -24,7 +14,7 @@ func TestNewEmployeeInviteEvent(t *testing.T) {
 	event := NewEmployeeInviteEvent(salonId, employeeId)
 
 	assert.NotNil(t, event)
-	assert.Equal(t, EmployeeInvite, event.Type)
+	assert.Equal(t, "EmployeeInvite", event.GetType())
 	assert.Equal(t, salonId, event.SalonId)
 	assert.Equal(t, employeeId, event.EmployeeId)
 }
@@ -35,20 +25,20 @@ func TestNewSalonInviteEvent(t *testing.T) {
 	event := NewSalonInviteEvent(salonId)
 
 	assert.NotNil(t, event)
-	assert.Equal(t, SalonInvite, event.Type)
+	assert.Equal(t, "SalonInvite", event.GetType())
 	assert.Equal(t, salonId, event.SalonId)
 }
 
 func TestNewClientInviteEvent(t *testing.T) {
 	clientId := uuid.New()
-	employeeId := uuid.New()
+	salonId := uuid.New()
 
-	event := NewClientInviteEvent(clientId, employeeId)
+	event := NewClientInviteEvent(clientId, salonId)
 
 	assert.NotNil(t, event)
-	assert.Equal(t, ClientInvite, event.Type)
+	assert.Equal(t, "ClientInvite", event.GetType())
 	assert.Equal(t, clientId, event.ClientId)
-	assert.Equal(t, employeeId, event.EmployeeId)
+	assert.Equal(t, salonId, event.SalonId)
 }
 
 func TestInviteEvent_InterfaceImplementation(t *testing.T) {
@@ -58,18 +48,18 @@ func TestInviteEvent_InterfaceImplementation(t *testing.T) {
 
 	employeeEvent := NewEmployeeInviteEvent(salonId, employeeId)
 	salonEvent := NewSalonInviteEvent(salonId)
-	clientEvent := NewClientInviteEvent(clientId, employeeId)
+	clientEvent := NewClientInviteEvent(clientId, salonId)
 
-	var inviteEvent InviteEvent
+	var inviteEvent Event
 
 	inviteEvent = employeeEvent
-	assert.Equal(t, EmployeeInvite, inviteEvent.GetType())
+	assert.Equal(t, "EmployeeInvite", inviteEvent.GetType())
 
 	inviteEvent = salonEvent
-	assert.Equal(t, SalonInvite, inviteEvent.GetType())
+	assert.Equal(t, "SalonInvite", inviteEvent.GetType())
 
 	inviteEvent = clientEvent
-	assert.Equal(t, ClientInvite, inviteEvent.GetType())
+	assert.Equal(t, "ClientInvite", inviteEvent.GetType())
 }
 
 func TestUUID_Initialization(t *testing.T) {
@@ -79,7 +69,7 @@ func TestUUID_Initialization(t *testing.T) {
 
 	employeeEvent := NewEmployeeInviteEvent(salonId, employeeId)
 	salonEvent := NewSalonInviteEvent(salonId)
-	clientEvent := NewClientInviteEvent(clientId, employeeId)
+	clientEvent := NewClientInviteEvent(clientId, salonId)
 
 	assert.NotEqual(t, uuid.Nil, employeeEvent.SalonId)
 	assert.NotEqual(t, uuid.Nil, employeeEvent.EmployeeId)
@@ -87,5 +77,5 @@ func TestUUID_Initialization(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, salonEvent.SalonId)
 
 	assert.NotEqual(t, uuid.Nil, clientEvent.ClientId)
-	assert.NotEqual(t, uuid.Nil, clientEvent.EmployeeId)
+	assert.NotEqual(t, uuid.Nil, clientEvent.SalonId)
 }
