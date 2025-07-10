@@ -30,13 +30,13 @@ func NewMainScreenHandler(l service.LinkService, r service.RenderService) MainSc
 //	@Accept			json
 //	@Produce		json
 //	@Param			User-Agent	header		string	true	"Юзер агент пользователя. ex: Android"
-//	@Param			linkId		query		string	true	"Идентификатор (NanoID)"
+//	@Param			linkId		param		string	true	"Идентификатор (NanoID)"
 //	@Success		200			{object}	string
 //	@Failure		400			{object}	resp.ErrorDTO	"Bad request"
 //	@Failure		500			{object}	resp.ErrorDTO	"Internal server error"
 //	@Router			/ [get]
 func (h *mainScreenHandler) MainScreen(ctx *gin.Context) {
-	linkId := ctx.Query("linkId")
+	linkId := ctx.Param("linkId")
 	if linkId == "" {
 		ctx.JSON(http.StatusBadRequest, resp.NewErrorDTO("linkId is required"))
 		return

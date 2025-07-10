@@ -24,5 +24,5 @@ func MapFPRoutes(e *gin.Engine, h FingerprintHandler) {
 }
 
 func MapMainScreenRoutes(e *gin.Engine, h MainScreenHandler) {
-	e.GET("/", h.MainScreen)
+	e.GET("/:linkId", h.MainScreen)
 }

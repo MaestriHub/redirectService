@@ -35,11 +35,12 @@ async function getPCData() {
 
         try {
             document.execCommand("copy");
-            window.location.href = appStoreLink;
         } catch (error) {
             console.error("Ошибка при копировании:", error);
         } finally {
             document.body.removeChild(tempTextArea);
         }
+
+        window.location.href = appStoreLink;
     });
 })();
