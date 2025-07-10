@@ -109,7 +109,7 @@ func (h *linkHandler) CreateInviteClient(ctx *gin.Context) {
 		return
 	}
 
-	event := domain.NewClientInviteEvent(customer.SalonId, customer.EmployeeId)
+	event := domain.NewClientInviteEvent(customer.ClientId, customer.SalonId)
 	link := domain.NewDirectLink(*event)
 
 	if err := h.linkService.CreateInvite(ctx, link); err != nil {
