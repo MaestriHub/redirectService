@@ -2,9 +2,9 @@ basePath: /
 definitions:
   params.CreateClientInviteLink:
     properties:
-      clientId:
-        type: string
       employeeId:
+        type: string
+      salonId:
         type: string
     type: object
   params.CreateEmployeeInviteLink:
@@ -78,7 +78,7 @@ paths:
         required: true
         type: string
       - description: Идентификатор (NanoID)
-        in: query
+        in: path
         name: linkId
         required: true
         type: string

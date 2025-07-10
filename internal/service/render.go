@@ -18,13 +18,12 @@ type RenderService interface {
 }
 
 type renderService struct {
-	cfg          configs.AppStoreLinksConfig
-	repoSalon    repository.SalonInfoRepo
-	repoEmployee repository.EmployeeInfoRepo
+	cfg       configs.AppStoreLinksConfig
+	repoSalon repository.SalonInfoRepo
 }
 
-func NewRenderService(cfg *configs.AppStoreLinksConfig, s repository.SalonInfoRepo, e repository.EmployeeInfoRepo) RenderService {
-	return &renderService{cfg: *cfg, repoSalon: s, repoEmployee: e}
+func NewRenderService(cfg *configs.AppStoreLinksConfig, s repository.SalonInfoRepo) RenderService {
+	return &renderService{cfg: *cfg, repoSalon: s}
 }
 
 type placeholder = string
@@ -38,10 +37,7 @@ const (
 )
 
 func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua domain.UserAgent) (string, *pkg.ErrorS) {
-	event, err := link.GetEvent()
-	if err != nil {
-		return "", pkg.NewNotFoundError(err.Error())
-	}
+	event := link.Event
 
 	path := getHTMLPath(event, ua)
 
@@ -80,13 +76,13 @@ func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua
 		mHTML = strings.Replace(mHTML, hDescription, salon.Description, -1)
 
 	case *domain.ClientInviteEvent:
-		emp, err := s.repoEmployee.GetInfo(ctx, e.EmployeeId)
+		salon, err := s.repoSalon.GetInfo(ctx, e.SalonId)
 		if err != nil {
-			log.Printf("не нашли работинка по айдишнику %v", e.EmployeeId)
-			emp = domain.NewDummyEmployee(e.EmployeeId)
+			log.Printf("не нашли салон по айдишнику %v", e.SalonId)
+			salon = domain.NewDummySalon(e.SalonId)
 		}
-		mHTML = strings.Replace(mHTML, hName, emp.Name, -1)
-		mHTML = strings.Replace(mHTML, hDescription, emp.Description, -1)
+		mHTML = strings.Replace(mHTML, hName, salon.Name, -1)
+		mHTML = strings.Replace(mHTML, hDescription, salon.Description, -1)
 	}
 
 	mHTML = injectAppStoreLink(mHTML, s.cfg, ua)
@@ -96,7 +92,7 @@ func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua
 	return mHTML, nil
 }
 
-func getHTMLPath(event domain.InviteEvent, ua domain.UserAgent) string {
+func getHTMLPath(event domain.Event, ua domain.UserAgent) string {
 	return fmt.Sprintf("static/%s/%s/Screen.html", event.GetType(), ua)
 }
 

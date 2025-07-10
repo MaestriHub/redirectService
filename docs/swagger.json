@@ -34,7 +34,7 @@
                         "type": "string",
                         "description": "Идентификатор (NanoID)",
                         "name": "linkId",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -319,10 +319,10 @@
         "params.CreateClientInviteLink": {
             "type": "object",
             "properties": {
-                "clientId": {
+                "employeeId": {
                     "type": "string"
                 },
-                "employeeId": {
+                "salonId": {
                     "type": "string"
                 }
             }

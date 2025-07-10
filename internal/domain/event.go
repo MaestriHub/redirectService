@@ -1,49 +1,85 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"encoding/json"
+	"fmt"
 
-type Event = string
-
-const (
-	EmployeeInvite Event = "EmployeeInvite"
-	SalonInvite    Event = "SalonInvite"
-	ClientInvite   Event = "ClientInvite"
+	"github.com/google/uuid"
 )
 
-type InviteEvent interface {
+type Event interface {
 	GetType() string
-}
-
-type BaseInviteEvent struct {
-	Type Event `json:"type"`
-}
-
-func (e BaseInviteEvent) GetType() string {
-	return e.Type
+	GetPayload() ([]byte, error)
 }
 
 type EmployeeInviteEvent struct {
-	BaseInviteEvent
 	SalonId    uuid.UUID `json:"salonId"`
 	EmployeeId uuid.UUID `json:"employeeId"`
 }
 
 type SalonInviteEvent struct {
-	BaseInviteEvent
 	SalonId uuid.UUID `json:"salonId"`
 }
 
 type ClientInviteEvent struct {
-	BaseInviteEvent
-	ClientId   uuid.UUID `json:"clientId"`
-	EmployeeId uuid.UUID `json:"employeeId"`
+	ClientId uuid.UUID `json:"clientId"`
+	SalonId  uuid.UUID `json:"salonId"`
+}
+
+func (e EmployeeInviteEvent) GetType() string {
+	return "EmployeeInvite"
+}
+
+func (e EmployeeInviteEvent) GetPayload() ([]byte, error) {
+	return json.Marshal(&e)
+}
+
+func (e SalonInviteEvent) GetType() string {
+	return "SalonInvite"
+}
+
+func (e SalonInviteEvent) GetPayload() ([]byte, error) {
+	return json.Marshal(&e)
+}
+
+func (e ClientInviteEvent) GetType() string {
+	return "ClientInvite"
+}
+
+func (e ClientInviteEvent) GetPayload() ([]byte, error) {
+	return json.Marshal(&e)
+}
+
+func NewEvent(eventType string, payload []byte) (Event, error) {
+	switch eventType {
+	case "EmployeeInvite":
+		var e EmployeeInviteEvent
+		err := json.Unmarshal(payload, &e)
+		if err != nil {
+			return nil, err
+		}
+		return e, nil
+	case "SalonInvite":
+		var e SalonInviteEvent
+		err := json.Unmarshal(payload, &e)
+		if err != nil {
+			return nil, err
+		}
+		return e, nil
+	case "ClientInvite":
+		var e ClientInviteEvent
+		err := json.Unmarshal(payload, &e)
+		if err != nil {
+			return nil, err
+		}
+		return e, nil
+	default:
+		return nil, fmt.Errorf("unknown event type %s", eventType)
+	}
 }
 
 func NewEmployeeInviteEvent(salonId, employeeId uuid.UUID) *EmployeeInviteEvent {
 	return &EmployeeInviteEvent{
-		BaseInviteEvent: BaseInviteEvent{
-			Type: EmployeeInvite,
-		},
 		SalonId:    salonId,
 		EmployeeId: employeeId,
 	}
@@ -51,19 +87,13 @@ func NewEmployeeInviteEvent(salonId, employeeId uuid.UUID) *EmployeeInviteEvent 
 
 func NewSalonInviteEvent(salonId uuid.UUID) *SalonInviteEvent {
 	return &SalonInviteEvent{
-		BaseInviteEvent: BaseInviteEvent{
-			Type: SalonInvite,
-		},
 		SalonId: salonId,
 	}
 }
 
-func NewClientInviteEvent(clientId, employeeId uuid.UUID) *ClientInviteEvent {
+func NewClientInviteEvent(clientId, salonId uuid.UUID) *ClientInviteEvent {
 	return &ClientInviteEvent{
-		BaseInviteEvent: BaseInviteEvent{
-			Type: ClientInvite,
-		},
-		ClientId:   clientId,
-		EmployeeId: employeeId,
+		ClientId: clientId,
+		SalonId:  salonId,
 	}
 }

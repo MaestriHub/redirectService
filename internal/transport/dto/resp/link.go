@@ -15,14 +15,19 @@ type DirectLinkDTO struct {
 }
 
 func NewDirectLinkDTO(link domain.DirectLink) (*DirectLinkDTO, *pkg.ErrorS) {
+	payload, err := link.Event.GetPayload()
+	if err != nil {
+		return nil, pkg.NewErrorS("Oops", http.StatusInternalServerError)
+	}
+
 	var rawPayload map[string]string
-	if err := json.Unmarshal(link.Payload, &rawPayload); err != nil {
+	if err := json.Unmarshal(payload, &rawPayload); err != nil {
 		return nil, pkg.NewErrorS("Ooops", http.StatusInternalServerError)
 	}
 
 	return &DirectLinkDTO{
 		NanoId:  link.NanoId,
 		Payload: rawPayload,
-		Event:   link.Event,
+		Event:   link.Event.GetType(),
 	}, nil
 }

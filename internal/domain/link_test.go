@@ -23,11 +23,20 @@ func TestNewDirectLink(t *testing.T) {
 	assert.NotNil(t, link)
 	assert.NotEmpty(t, link.NanoId, "NanoId should not be empty")
 	assert.Equal(t, 0, link.Clicks, "Clicks should be initialized to 0")
-	assert.Equal(t, event.GetType(), link.Event, "Event type should match")
+	assert.Equal(t, event.GetType(), link.Event.GetType(), "Event type should match")
 
 	// Check Payload deserialization
+	payload, err := link.Event.GetPayload()
+	if err != nil {
+		t.Fatalf("Failed to get payload: %v", err)
+	}
+
 	var payloadEvent SalonInviteEvent
-	err = json.Unmarshal(link.Payload, &payloadEvent)
+	err = json.Unmarshal(payload, &payloadEvent)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal payload: %v", err)
+	}
+
 	assert.NoError(t, err, "Payload should be valid JSON")
 	assert.Equal(t, salonId, payloadEvent.SalonId, "Payload should contain correct SalonId")
 }
@@ -65,7 +74,7 @@ func TestDirectLink_GetEvent_ValidEvent(t *testing.T) {
 	}
 
 	// Act
-	retrievedEvent, err := link.GetEvent()
+	retrievedEvent := link.Event
 
 	// Assert
 	assert.NoError(t, err, "GetEvent should not return an error for valid events")
