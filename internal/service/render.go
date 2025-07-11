@@ -18,12 +18,13 @@ type RenderService interface {
 }
 
 type renderService struct {
-	cfg       configs.AppStoreLinksConfig
-	repoSalon repository.SalonInfoRepo
+	cfg          configs.AppStoreLinksConfig
+	repoSalon    repository.SalonInfoRepo
+	urlGenerator UrlGeneratorService
 }
 
-func NewRenderService(cfg *configs.AppStoreLinksConfig, s repository.SalonInfoRepo) RenderService {
-	return &renderService{cfg: *cfg, repoSalon: s}
+func NewRenderService(cfg *configs.AppStoreLinksConfig, s repository.SalonInfoRepo, urlGenerator UrlGeneratorService) RenderService {
+	return &renderService{cfg: *cfg, repoSalon: s, urlGenerator: urlGenerator}
 }
 
 type placeholder = string
@@ -86,7 +87,9 @@ func (s *renderService) RenderMain(ctx *gin.Context, link *domain.DirectLink, ua
 	}
 
 	mHTML = injectAppStoreLink(mHTML, s.cfg, ua)
-	mHTML = strings.Replace(mHTML, hDynamicUniversalLink, link.ToURL(), -1)
+
+	universalLink := s.urlGenerator.Generate(link)
+	mHTML = strings.Replace(mHTML, hDynamicUniversalLink, universalLink, -1)
 	mHTML = strings.Replace(mHTML, hLinkID, link.NanoId, -1)
 
 	return mHTML, nil

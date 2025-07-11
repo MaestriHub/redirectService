@@ -54,8 +54,9 @@ func main() {
 	fingerprintRepo := repository.NewFingerprintRepo(db)
 
 	// Services
+	urlGenerator := service.NewUrlGeneratorService(cfg.UrlConfig.RedirectLink)
 	linkService := service.NewLinkService(linkRepo)
-	renderService := service.NewRenderService(cfg.AppStoreLinksConfig, salonInfoRepo)
+	renderService := service.NewRenderService(cfg.AppStoreLinksConfig, salonInfoRepo, urlGenerator)
 	fingerprintService := service.NewFingerprintService(fingerprintRepo, linkRepo)
 
 	// Handlers

@@ -7,6 +7,7 @@ import (
 type Config struct {
 	*DbConfig
 	*AppStoreLinksConfig
+	*UrlConfig
 }
 
 type DbConfig struct {
@@ -22,10 +23,15 @@ type AppStoreLinksConfig struct {
 	IOSLink     string
 }
 
+type UrlConfig struct {
+	RedirectLink string // example: https://link.maetry.com/
+}
+
 func NewConfig() *Config {
 	return &Config{
 		DbConfig:            NewDBConfig(),
 		AppStoreLinksConfig: NewAppStoreLinksConfig(),
+		UrlConfig:           NewUrlConfig(),
 	}
 }
 
@@ -43,6 +49,12 @@ func NewAppStoreLinksConfig() *AppStoreLinksConfig {
 	return &AppStoreLinksConfig{
 		AndroidLink: os.Getenv("ANDROID_APP_STORE_LINK"),
 		IOSLink:     os.Getenv("IOS_APP_STORE_LINK"),
+	}
+}
+
+func NewUrlConfig() *UrlConfig {
+	return &UrlConfig{
+		RedirectLink: os.Getenv("REDIRECT_LINK"),
 	}
 }
 

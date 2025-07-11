@@ -24,10 +24,6 @@ func (l *DirectLink) IncClicks() {
 	l.Clicks++
 }
 
-func (l *DirectLink) ToURL() string {
-	return "https://link.maetry.com/" + l.NanoId
-}
-
 func (l *DirectLink) Validate() error {
 	return nil
 }
