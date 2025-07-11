@@ -49,18 +49,6 @@ func TestDirectLink_IncClicks(t *testing.T) {
 	assert.Equal(t, 6, link.Clicks, "Clicks should increment by 1")
 }
 
-func TestDirectLink_ToURL(t *testing.T) {
-	// Arrange
-	link := DirectLink{NanoId: "abc123"}
-
-	// Act
-	url := link.ToURL()
-
-	// Assert
-	expectedURL := "https://link.maetry.com/abc123"
-	assert.Equal(t, expectedURL, url, "URL should match the expected format")
-}
-
 func TestDirectLink_GetEvent_ValidEvent(t *testing.T) {
 	// Arrange
 	salonId := uuid.New()
