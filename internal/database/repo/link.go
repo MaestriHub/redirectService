@@ -36,12 +36,17 @@ func (l linkRepo) Create(ctx *gin.Context, link *domain.DirectLink) error {
 }
 
 func (l linkRepo) Update(ctx *gin.Context, link *domain.DirectLink) error {
+	dbLink, err := models.NewDirectLinkDB(link)
+	if err != nil {
+		return err
+	}
+
 	if err := l.db.
 		Model(&models.DirectLink{}).
 		Where("nano_id = ?", link.NanoId).
 		Limit(1).
 		Order("create_at asc").
-		Updates(&link).Error; err != nil {
+		Updates(&dbLink).Error; err != nil {
 		return fmt.Errorf("db update link: %w", err)
 	}
 
